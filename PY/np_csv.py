@@ -1,4 +1,9 @@
 import numpy as np
+import pandas as pd
+
+####################################################
+# init an example point cloud
+####################################################
 
 point_pos = np.random.rand(100, 3)
 
@@ -7,6 +12,18 @@ point_pos = np.random.rand(100, 3)
 # Translation
 # point_pos += np.array([0, 2, 0])
 
-print(point_pos)
+####################################################
+# create panda dataframe
+####################################################
 
-np.savetxt("PY_OUT/point_pos.csv", point_pos, delimiter=",")
+points_df = pd.DataFrame(
+    {'PX': point_pos[:, 0],
+     'PY': point_pos[:, 1],
+     'PZ': point_pos[:, 2],
+     })
+
+####################################################
+# save to CSV
+####################################################
+
+points_df.to_csv('PY_OUT/point_pos.csv', index=True, float_format='%g')
