@@ -1,6 +1,6 @@
 import networkx as nx
 import numpy as np
-
+import pandas as pd
 
 ####################################################
 # init an example graph
@@ -38,8 +38,11 @@ graph_node_bbs = np.array(
     list(nx.get_node_attributes(G, 'betweenness').items()))[:, 1]
 
 # merge
-graph_nodes = np.c_[np.arange(graph_nodes.size),
-                    graph_nodes, graph_node_names, graph_node_bbs]
+graph_nodes_df = pd.DataFrame(
+    {'node': graph_nodes,
+     'name': graph_node_names,
+     'betweenness': graph_node_bbs,
+     })
 
 ####################################################
 # retrieve the edges in numpy array
@@ -58,18 +61,27 @@ graph_edge_bbs = np.array(
 # merge
 graph_edges = np.c_[graph_edges, graph_edge_names,
                     graph_edge_weights, graph_edge_bbs]
+graph_edges_df = pd.DataFrame(
+    {'str': graph_edges[:, 0],
+     'end': graph_edges[:, 1],
+     'name': graph_edge_names,
+     'weight': graph_edge_weights,
+     'betweenness': graph_edge_bbs,
+     })
 
 ####################################################
 # retrieve the adjacency matrix
 ####################################################
 
 graph_adj_matrix = nx.to_numpy_array(G)
+graph_adj_matrix_df = pd.DataFrame(data=graph_adj_matrix)
 
 ####################################################
 # save to CSV
 ####################################################
-
-np.savetxt("PY_OUT/graph_nodes.csv", graph_nodes, fmt="%s", delimiter=",")
-np.savetxt("PY_OUT/graph_edges.csv", graph_edges, fmt='%s', delimiter=",")
-np.savetxt("PY_OUT/graph_adj_matrix.csv",
-           graph_adj_matrix, fmt='%s', delimiter=",")
+graph_nodes_df.to_csv('PY_OUT/graph_nodes.csv',
+                      index=True, float_format='%.3f')
+graph_edges_df.to_csv('PY_OUT/graph_edges.csv',
+                      index=True, float_format='%.3f')
+graph_adj_matrix_df.to_csv(
+    'PY_OUT/graph_adj_matrix.csv', index=True, float_format='%.3f')
