@@ -1,5 +1,21 @@
+
+
+"""
+An example of exporting numpy arrays holding coordiantes of points into csv
+"""
+
 import numpy as np
 import pandas as pd
+
+
+__author__ = "Shervin Azadi"
+__copyright__ = "???"
+__credits__ = ["Shervin Azadi"]
+__license__ = "???"
+__version__ = "0.0.1"
+__maintainer__ = "Shervin Azadi"
+__email__ = "shervinazadi93@gmail.com"
+__status__ = "Dev"
 
 ####################################################
 # init an example point cloud
