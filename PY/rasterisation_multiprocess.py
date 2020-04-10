@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import compas
 from compas.datastructures import Mesh
+import concurrent.futures
 
 ####################################################
 # INPUTS
@@ -52,12 +53,12 @@ ray_dir = np.concatenate(tuple(ray_dir), axis=0)
 # intersection
 ####################################################
 
-hit_positions = []
-# iterate over the faces
-for face in geo_mesh.faces():
+
+def raster(face, voxel_size, mesh_bb_size, ray_orig_ind, ray_dir, tol):
+    face_hit_pos = []
     face_verticies_xyz = geo_mesh.face_coordinates(face)
     if len(face_verticies_xyz) != 3:
-        continue
+        return([])
 
     face_verticies_xyz = np.array(face_verticies_xyz)
 
@@ -86,7 +87,19 @@ for face in geo_mesh.faces():
         hit_pt = compas.geometry.intersection_line_triangle(
             (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         if hit_pt is not None:
-            hit_positions.append(hit_pt)
+            face_hit_pos.append(hit_pt)
+
+    return(face_hit_pos)
+
+
+hit_positions = []
+
+with concurrent.futures.ProcessPoolExecutor() as executor:
+    results = [executor.submit(
+        raster, face, voxel_size, mesh_bb_size, ray_orig_ind, ray_dir, tol) for face in geo_mesh.faces()]
+
+    for f in concurrent.futures.as_completed(results):
+        hit_positions.extend(f.result())
 
 ####################################################
 # convert hit positions into volumetric data
