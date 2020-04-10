@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import compas
 from compas.datastructures import Mesh
 
@@ -7,9 +8,9 @@ from compas.datastructures import Mesh
 ####################################################
 
 dim_num = 3
-vs = 0.05
+vs = 0.01
 voxel_size = np.array([vs, vs, vs])
-tol = np.min(voxel_size * 0.01)
+tol = 1e-06
 geo_mesh = Mesh.from_obj('IN/bunny.obj')
 
 ####################################################
@@ -25,7 +26,7 @@ mesh_bb_size = mesh_bb_max - mesh_bb_min
 # find the minimum index in discrete space
 mesh_bb_min_z3 = np.rint(mesh_bb_min / voxel_size).astype(int)
 # calculate the size of voxelated volume
-vol_size = np.ceil(mesh_bb_size / voxel_size).astype(int)
+vol_size = np.ceil((mesh_bb_size / voxel_size)+1).astype(int)
 # initiate the 3d array of voxel space called volume
 vol = np.zeros(vol_size)
 
@@ -53,23 +54,38 @@ ray_dir = np.concatenate(tuple(ray_dir), axis=0)
 
 
 hit_positions = []
+# iterate over the faces
 for face in geo_mesh.faces():
     face_verticies_xyz = geo_mesh.face_coordinates(face)
     if len(face_verticies_xyz) != 3:
         continue
 
+    face_verticies_xyz = np.array(face_verticies_xyz)
+
+    # project the ray origin
+    proj_ray_orig = ray_orig_ind * voxel_size * (1 - ray_dir)
+
+    # check if any coordinate of the projected ray origin is in betwen the max and min of the coordinates of the face
+    min_con = np.amin(face_verticies_xyz, axis=0) <= proj_ray_orig
+    max_con = np.amax(face_verticies_xyz, axis=0) >= proj_ray_orig
+    in_range = np.any(min_con * max_con, axis=1)
+
+    # retrieve the ray indicies that are in range
+    in_rang_ind = np.argwhere(in_range).flatten()
+
     # iterate over the rays
-    for r in range(ray_orig_ind.shape[0]):
+    for ray in in_rang_ind:
+
         # calc ray origin position: Z3 to R3
-        orig_pos = ray_orig_ind[r] * voxel_size
+        orig_pos = ray_orig_ind[ray] * voxel_size
         # retrieve ray direction
-        direction = ray_dir[r]
+        direction = ray_dir[ray]
         # calc the destination of ray (max distance that it needs to travel)
-        dest_pos = orig_pos + ray_dir[r] * mesh_bb_size
+        dest_pos = orig_pos + ray_dir[ray] * mesh_bb_size
 
         # intersction
         hit_pt = compas.geometry.intersection_line_triangle(
-            (orig_pos, dest_pos), face_verticies_xyz, tol=1e-06)
+            (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         if hit_pt is not None:
             hit_positions.append(hit_pt)
 
@@ -98,3 +114,12 @@ hit_unq_pos = hit_unq_ind * voxel_size
 
 # set values in the volumetric data
 vol[vol_ind[0], vol_ind[1], vol_ind[2]] = 1
+
+
+hit_unq_pos_df = pd.DataFrame(
+    {'PX': hit_unq_pos[:, 0],
+     'PY': hit_unq_pos[:, 1],
+     'PZ': hit_unq_pos[:, 2],
+     })
+
+hit_unq_pos_df.to_csv('PY_OUT/bunny_voxels.csv', index=True, float_format='%g')
