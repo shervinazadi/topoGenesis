@@ -50,11 +50,11 @@ vol = np.zeros(vol_size)
 ####################################################
 
 # retriev the voxel index for ray origins
-vol_ind = np.indices(vol_size)
-vol_ind_trans = np.transpose(vol_ind) + mesh_bb_min_z3
-vol_ind = np.transpose(vol_ind_trans)
+hit_vol_ind = np.indices(vol_size)
+vol_ind_trans = np.transpose(hit_vol_ind) + mesh_bb_min_z3
+hit_vol_ind = np.transpose(vol_ind_trans)
 ray_orig_ind = [np.concatenate(np.transpose(
-    np.take(vol_ind, 0, axis=d + 1))) for d in range(dim_num)]
+    np.take(hit_vol_ind, 0, axis=d + 1))) for d in range(dim_num)]
 ray_orig_ind = np.concatenate(tuple(ray_orig_ind), axis=0)
 
 # retrieve the direction of ray shooting for each origin point
@@ -117,7 +117,7 @@ hit_indicies = np.rint(hit_positions / voxel_size)
 hit_unq_ind = np.unique(hit_indicies, axis=0)
 
 # calculate volum indecies
-vol_ind = np.transpose(hit_unq_ind - mesh_bb_min_z3).astype(int)
+hit_vol_ind = np.transpose(hit_unq_ind - mesh_bb_min_z3).astype(int)
 
 ####################################################
 # OUTPUTS
@@ -126,14 +126,33 @@ vol_ind = np.transpose(hit_unq_ind - mesh_bb_min_z3).astype(int)
 # Z3 to R3
 hit_unq_pos = hit_unq_ind * voxel_size
 
-# set values in the volumetric data
-vol[vol_ind[0], vol_ind[1], vol_ind[2]] = 1
-
-
+# hit position to panada dataframe
 hit_unq_pos_df = pd.DataFrame(
     {'PX': hit_unq_pos[:, 0],
      'PY': hit_unq_pos[:, 1],
      'PZ': hit_unq_pos[:, 2],
      })
 
+
+# set values in the volumetric data
+vol[hit_vol_ind[0], hit_vol_ind[1], hit_vol_ind[2]] = 1
+
+# get the indicies of the voxels
+vol_3d_ind = np.indices(vol.shape)
+vol_3d_ind_flat = np.c_[vol_3d_ind[0].ravel(
+), vol_3d_ind[1].ravel(), vol_3d_ind[2].ravel()]
+
+# flatten the volume
+vol_flat = vol.ravel()
+
+# volume data to panda dataframe
+vol_df = pd.DataFrame(
+    {'IX': vol_3d_ind_flat[:, 0],
+     'IY': vol_3d_ind_flat[:, 1],
+     'IZ': vol_3d_ind_flat[:, 2],
+     'value': vol_flat,
+     })
+
+# save to csv
 hit_unq_pos_df.to_csv('PY_OUT/bunny_voxels.csv', index=True, float_format='%g')
+vol_df.to_csv('PY_OUT/bunny_volume.csv', index=False, float_format='%g')

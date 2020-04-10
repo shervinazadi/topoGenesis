@@ -23,10 +23,10 @@ __status__ = "Dev"
 ####################################################
 
 # read the voxel 3-dimensional indices
-vol_3d_ind_flat = np.genfromtxt('IN/volume_sphere_bool.csv',
+vol_3d_ind_flat = np.genfromtxt('IN/bunny_volume.csv',
                                 delimiter=',', skip_header=1, usecols=(0, 1, 2)).astype(int)
 # read voxel valus
-vol_flat = np.genfromtxt('IN/volume_sphere_bool.csv',
+vol_flat = np.genfromtxt('IN/bunny_volume.csv',
                          delimiter=',', skip_header=1, usecols=3).astype(int)
 # find the olume shape from indices
 vol_shape = np.amax(vol_3d_ind_flat, axis=0) + 1
@@ -142,6 +142,7 @@ graph_edges_df = pd.DataFrame(
      'end': graph_edges[:, 1],
      })
 
+# save csv
 graph_nodes_df.to_csv('PY_OUT/vol_graph_nodes.csv',
                       index=False, float_format='%.3f')
 graph_edges_df.to_csv('PY_OUT/vol_graph_edges.csv',

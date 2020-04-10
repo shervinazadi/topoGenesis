@@ -28,12 +28,13 @@ vol_shape = np.array([vs, vs, vs])
 vol = np.zeros(vol_shape).astype(int)
 
 # get the indicies of the voxels
-vol_ind = np.transpose(np.indices(vol_shape))
-vol_ind = vol_ind.reshape(-1, vol_ind.shape[-1])
+vol_3d_ind = np.indices(vol.shape)
+vol_3d_ind_flat = np.c_[vol_3d_ind[0].ravel(
+), vol_3d_ind[1].ravel(), vol_3d_ind[2].ravel()]
 
 # set the values to 1 if it is inside a sphere
 rad = 5
-vol_p2 = np.sum(np.power(vol_ind, 2), axis=1).reshape(vol_shape)
+vol_p2 = np.sum(np.power(vol_3d_ind_flat, 2), axis=1).reshape(vol_shape)
 np.place(vol, vol_p2 <= rad ** 2, 1)
 
 ####################################################
@@ -43,9 +44,9 @@ np.place(vol, vol_p2 <= rad ** 2, 1)
 vol_flat = vol.flatten()
 
 vol_df = pd.DataFrame(
-    {'IX': vol_ind[:, 0],
-     'IY': vol_ind[:, 1],
-     'IZ': vol_ind[:, 2],
+    {'IX': vol_3d_ind_flat[:, 0],
+     'IY': vol_3d_ind_flat[:, 1],
+     'IZ': vol_3d_ind_flat[:, 2],
      'value': vol_flat,
      })
 
