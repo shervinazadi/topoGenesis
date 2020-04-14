@@ -45,8 +45,25 @@ print(np.stack(neighbours, axis=-1))
 import compas
 
 print(compas.__version__)
+
+
+
+### importing volpy
+
+corrected vscode terminal using : 
+    "terminal.integrated.env.osx": {
+            "PATH": ""
+    }
+learned it from: https://stackoverflow.com/questions/54582361/vscode-terminal-shows-incorrect-python-version-and-path-launching-terminal-from
+
+#### 
+used this : python -m pip install -e .
+learned it from: https://stackoverflow.com/questions/41060382/using-pip-to-install-packages-to-anaconda-environment
 """
 
-# from . import volpy 
 
-# print(volpy.draft.hello())
+
+import volpy
+
+print(volpy.hello())
+print(volpy.bye())
