@@ -1,3 +1,5 @@
+
+
 import numpy as np
 """
 size = (3, 4)
@@ -39,7 +41,12 @@ shifts = [[0, 0],
 
 neighbours = [np.roll(order, shift, (0, 1)).ravel() for shift in shifts]
 print(np.stack(neighbours, axis=-1))
-"""
+
 import compas
 
 print(compas.__version__)
+"""
+
+# from . import volpy 
+
+# print(volpy.draft.hello())
