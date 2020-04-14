@@ -54,13 +54,13 @@ hit_vol_ind = np.indices(vol_size)
 vol_ind_trans = np.transpose(hit_vol_ind) + mesh_bb_min_z3
 hit_vol_ind = np.transpose(vol_ind_trans)
 ray_orig_ind = [np.concatenate(np.transpose(
-    np.take(hit_vol_ind, 0, axis=d + 1))) for d in range(dim_num)]
+    np.take(hit_vol_ind, 0, axis=d + 1))) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
 ray_orig_ind = np.concatenate(tuple(ray_orig_ind), axis=0)
 
 # retrieve the direction of ray shooting for each origin point
 normals = np.identity(dim_num).astype(int)
 ray_dir = [np.tile(normals[d], (np.take(vol, 0, axis=d).size, 1))
-           for d in range(dim_num)]
+           for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
 ray_dir = np.concatenate(tuple(ray_dir), axis=0)
 
 ####################################################
@@ -95,6 +95,7 @@ for face in geo_mesh.faces():
         # retrieve ray direction
         direction = ray_dir[ray]
         # calc the destination of ray (max distance that it needs to travel)
+        # this line has a problem given the negative indicies are included now
         dest_pos = orig_pos + ray_dir[ray] * mesh_bb_size
 
         # intersction
@@ -140,7 +141,7 @@ vol[hit_vol_ind[0], hit_vol_ind[1], hit_vol_ind[2]] = 1
 # get the indicies of the voxels
 vol_3d_ind = np.indices(vol.shape)
 vol_3d_ind_flat = np.c_[vol_3d_ind[0].ravel(
-), vol_3d_ind[1].ravel(), vol_3d_ind[2].ravel()]
+), vol_3d_ind[1].ravel(), vol_3d_ind[2].ravel()]  # this can be done with transpose as well
 
 # flatten the volume
 vol_flat = vol.ravel()
