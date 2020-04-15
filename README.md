@@ -1,6 +1,6 @@
 # GSS-Lab Python Modules + Python-Houdini Setup
 
-This is the draft of the python modules that are currently being developed at GSS-Lab, Department of Architectural Engineering and Technology, at TU Delft. These modules are mainly working with volumetric data-sets and fields. We also include an example folder that contains example algorithms that utilizes the modules and a standard setup for using Houdini as the Visualizer for algorithms.
+This is the draft of the python modules that are currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nouria](https://github.com/Pirouz-Nourian) at GSS-Lab, Department of Architectural Engineering and Technology, at TU Delft. These modules are mainly working with volumetric data-sets and fields. We also include an example folder that contains example algorithms that utilizes the modules and a standard setup for using [Houdini](https://www.sidefx.com/) as the Visualizer for algorithms.
 
 ## Module Installation
 
@@ -36,3 +36,15 @@ to make sure that the terminal inside VS Code is using the same python as your c
     }
 ```
 
+## To Do
+
+Checkout & Compare:
+- https://wiki.python.org/moin/NumericAndScientific
+- [numdifftools](https://github.com/pbrod/numdifftools)
+- [fipy](https://www.ctcms.nist.gov/fipy/)
+- http://hplgit.github.io/pyhpc/doc/pub/._project001.html
+- https://www.math.ubc.ca/~pwalls/math-python/differentiation/differentiation/
+- [scipy laplacian](https://mail.python.org/pipermail/scipy-user/2013-April/034452.html)
+
+Coding Style:
+- [PEP8](https://www.python.org/dev/peps/pep-0008/)
