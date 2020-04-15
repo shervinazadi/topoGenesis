@@ -61,8 +61,6 @@ used this : python -m pip install -e .
 learned it from: https://stackoverflow.com/questions/41060382/using-pip-to-install-packages-to-anaconda-environment
 """
 
-
-
 import volpy
 
 print(volpy.hello())
