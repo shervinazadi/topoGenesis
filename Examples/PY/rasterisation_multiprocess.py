@@ -27,7 +27,7 @@ dim_num = 3
 vs = 0.01
 voxel_size = np.array([vs, vs, vs])
 tol = 1e-06
-geo_mesh = Mesh.from_obj('IN/bunny.obj')
+geo_mesh = Mesh.from_obj('Examples/IN/bunny.obj')
 
 ####################################################
 # Initialize the volumetric array
@@ -168,5 +168,7 @@ vol_df = pd.DataFrame(
      })
 
 # save to csv
-hit_unq_pos_df.to_csv('PY_OUT/bunny_voxels.csv', index=True, float_format='%g')
-vol_df.to_csv('PY_OUT/bunny_volume.csv', index=False, float_format='%g')
+hit_unq_pos_df.to_csv('Examples/PY_OUT/bunny_voxels.csv',
+                      index=True, float_format='%g')
+vol_df.to_csv('Examples/PY_OUT/bunny_volume.csv',
+              index=False, float_format='%g')
