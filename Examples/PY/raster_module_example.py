@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import compas
 from compas.datastructures import Mesh
+import pyvista as pv
 
 import volpy
 
@@ -24,11 +25,10 @@ __status__ = "Dev"
 ####################################################
 
 
-vs = 0.05
+vs = 0.04
 voxel_size = np.array([vs, vs, vs])
 tol = 1e-06
 geo_mesh = Mesh.from_obj('Examples/IN/bunny.obj')
-
 
 ####################################################
 # Rasterization
@@ -36,7 +36,7 @@ geo_mesh = Mesh.from_obj('Examples/IN/bunny.obj')
 
 
 volume, points = volpy.rasterization(
-    geo_mesh, voxel_size, multi_core_process=True, return_points=True)
+    geo_mesh, voxel_size, multi_core_process=False, return_points=True)
 
 ####################################################
 # OUTPUTS
@@ -60,3 +60,8 @@ pnt_metadata = pd.Series(
     ])
 
 volpy.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
+
+
+####################################################
+# Visualization : PyVista
+####################################################

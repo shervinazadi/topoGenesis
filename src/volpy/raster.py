@@ -19,7 +19,7 @@ __email__ = "shervinazadi93@gmail.com"
 __status__ = "Dev"
 
 
-def raster_intersect(face, voxel_size, mesh_bb_size, ray_orig_ind, ray_dir, tol):
+def raster_intersect(geo_mesh, face, voxel_size, mesh_bb_size, ray_orig_ind, ray_dir, tol):
     face_hit_pos = []
     face_verticies_xyz = geo_mesh.face_coordinates(face)
     if len(face_verticies_xyz) != 3:
@@ -120,14 +120,14 @@ def rasterization(geo_mesh, voxel_size, tol=1e-06, **kwargs):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             # submit the processes
             results = [executor.submit(
-                raster_intersect, face, voxel_size, mesh_bb_size, ray_orig_ind, ray_dir, tol) for face in geo_mesh.faces()]
+                raster_intersect, geo_mesh, face, voxel_size, mesh_bb_size, ray_orig_ind, ray_dir, tol) for face in geo_mesh.faces()]
             # fetch the results
             for f in concurrent.futures.as_completed(results):
                 hit_positions.extend(f.result())
     else:
         # iterate over the faces
         for face in geo_mesh.faces():
-            face_hit_pos = raster_intersect(face, voxel_size, mesh_bb_size,
+            face_hit_pos = raster_intersect(geo_mesh, face, voxel_size, mesh_bb_size,
                                             ray_orig_ind, ray_dir, tol)
             hit_positions.extend(face_hit_pos)
 
