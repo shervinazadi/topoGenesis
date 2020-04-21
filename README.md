@@ -25,6 +25,7 @@ conda install pandas
 cd GSS_PYHOU_SETUP/src
 python -m pip install -e .
 ```
+Ensure that the pip install is run from the python of the same conda environment (genesis): thus, first navigate to that environment and type "python -m pip install -e". The addition -e uses the "symlink" module from pip ecosystem to ensure that a work-in-progress library is always updated from the latest source. 
 
 ### VS Code Setup
 

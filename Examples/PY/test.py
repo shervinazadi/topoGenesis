@@ -61,7 +61,16 @@ used this : python -m pip install -e .
 learned it from: https://stackoverflow.com/questions/41060382/using-pip-to-install-packages-to-anaconda-environment
 """
 
-import volpy
+# import volpy
 
-print(volpy.hello())
-print(volpy.bye())
+# print(volpy.hello())
+# print(volpy.bye())
+
+for (i,item) in enumerate([1,2,3]):
+    print((i,item))
+
+def sumproduct(a,b):
+    return (a+b,a*b)
+(sum,product)=sumproduct(2,3)
+print(sum)
+print(product)
