@@ -31,9 +31,9 @@ def raster_intersect(geo_mesh, face, voxel_size, mesh_bb_size, ray_orig_ind, ray
     proj_ray_orig = ray_orig_ind * voxel_size * (1 - ray_dir)
 
     # check if any coordinate of the projected ray origin is in betwen the max and min of the coordinates of the face
-    min_con = np.amin(face_verticies_xyz, axis=0) <= proj_ray_orig
-    max_con = np.amax(face_verticies_xyz, axis=0) >= proj_ray_orig
-    in_range_rays = np.any(min_con * max_con, axis=1)
+    min_con = proj_ray_orig >= np.amin(face_verticies_xyz, axis=0)*(1 - ray_dir)
+    max_con = proj_ray_orig <= np.amax(face_verticies_xyz, axis=0)*(1 - ray_dir)
+    in_range_rays = np.all(min_con * max_con, axis=1)
 
     # retrieve the ray indicies that are in range
     in_rang_ind = np.argwhere(in_range_rays).flatten()

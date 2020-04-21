@@ -10,7 +10,7 @@ import compas
 from compas.datastructures import Mesh
 import sys
 import pyvista as pv
-# np.set_printoptions(threshold=sys.maxsize)
+np.set_printoptions(threshold=sys.maxsize)
 
 __author__ = "Shervin Azadi, and Pirouz Nourian"
 __copyright__ = "???"
@@ -74,7 +74,7 @@ hit_positions = []
 # iterate over the faces
 # for face in geo_mesh.faces():
 faces = list(geo_mesh.faces())
-face = faces[1]
+face = faces[42]
 print(face)
 face_verticies_xyz = geo_mesh.face_coordinates(face)
 """if len(face_verticies_xyz) != 3:
@@ -86,16 +86,16 @@ face_verticies_xyz = np.array(face_verticies_xyz)
 proj_ray_orig = ray_orig_ind * voxel_size * (1 - ray_dir)
 
 # check if any coordinate of the projected ray origin is in betwen the max and min of the coordinates of the face
-min_con = np.amin(face_verticies_xyz, axis=0) <= proj_ray_orig
-max_con = np.amax(face_verticies_xyz, axis=0) >= proj_ray_orig
-in_range_rays = np.any(min_con * max_con, axis=1)
+min_con = proj_ray_orig >= np.amin(face_verticies_xyz, axis=0)*(1 - ray_dir)
+max_con = proj_ray_orig <= np.amax(face_verticies_xyz, axis=0)*(1 - ray_dir)
+in_range_rays = np.all(min_con * max_con, axis=1)
 
 # retrieve the ray indicies that are in range
 in_rang_ind = np.argwhere(in_range_rays).flatten()
 #print(np.amin(face_verticies_xyz, axis=0))
 #print(np.amax(face_verticies_xyz, axis=0))
 #print(np.c_[proj_ray_orig, min_con, max_con, in_range_rays])
-sel = ray_orig_ind[in_rang_ind] - mesh_bb_min_z3
+sel = ray_orig_ind[in_rang_ind]- mesh_bb_min_z3
 
 faces = np.array([3, 0, 1, 2])
 surf = pv.PolyData(face_verticies_xyz, faces)
