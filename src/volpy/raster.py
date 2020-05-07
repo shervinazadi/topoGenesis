@@ -8,6 +8,7 @@ import pandas as pd
 import compas
 from compas.datastructures import Mesh
 import concurrent.futures
+import warnings
 
 __author__ = "Shervin Azadi, and Pirouz Nourian"
 __copyright__ = "???"
@@ -69,6 +70,11 @@ def rasterization(geo_mesh, voxel_size, tol=1e-06, **kwargs):
     dim_num = voxel_size.size
     multi_core_process = kwargs.get('multi_core_process', False)
     return_points = kwargs.get('return_points', False)
+
+    # compare voxel size and tolerance and warn if it is not enough
+    if min(voxel_size) * 1e-06 < tol:
+        warnings.warn(
+            "Warning! The tolerance for rasterization is not small enough, it may result in faulty results or failure of rasterization. Try decreasing the tolerance or scaling the geometry.")
 
     ####################################################
     # Initialize the volumetric array

@@ -6,7 +6,8 @@ Rasterizing a mesh to a volumetric datastructure
 import numpy as np
 import pandas as pd
 import compas
-from compas.datastructures import Mesh
+import compas.datastructures as ds
+from compas.geometry import Translation
 import pyvista as pv
 
 import volpy
@@ -26,38 +27,38 @@ __status__ = "Dev"
 
 vs = 0.01
 voxel_size = np.array([vs, vs, vs])
-tol = 1e-06
-geo_mesh = Mesh.from_obj('Examples/IN/bunny.obj')
+tol = 1e-09  # this was the problem
+geo_mesh = ds.Mesh.from_obj('Examples/IN/bunny.obj')
 
 ####################################################
 # Rasterization
 ####################################################
 
 volume, points, hits = volpy.rasterization(
-    geo_mesh, voxel_size, multi_core_process=True, return_points=True)
+    geo_mesh, voxel_size, multi_core_process=True, return_points=True, tol=tol)
 
 ####################################################
 # OUTPUTS
 ####################################################
 
-# vol_filepath = 'Examples/PY_OUT/bunny_volume.csv'
-# vol_metadata = pd.Series(
-#     [
-#         (f'voxel_size:{vs}-{vs}-{vs}'),
-#         ('name: bunny')
-#     ])
+vol_filepath = 'Examples/PY_OUT/bunny_volume.csv'
+vol_metadata = pd.Series(
+    [
+        (f'voxel_size:{vs}-{vs}-{vs}'),
+        ('name: bunny')
+    ])
 
-# volpy.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
+volpy.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
 
 
-# pnt_filepath = 'Examples/PY_OUT/bunny_voxels.csv'
-# pnt_metadata = pd.Series(
-#     [
-#         (f'voxel_size:{vs}-{vs}-{vs}'),
-#         ('name: bunny')
-#     ])
+pnt_filepath = 'Examples/PY_OUT/bunny_voxels.csv'
+pnt_metadata = pd.Series(
+    [
+        (f'voxel_size:{vs}-{vs}-{vs}'),
+        ('name: bunny')
+    ])
 
-# volpy.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
+volpy.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
 
 
 ####################################################
@@ -86,19 +87,34 @@ grid.spacing = voxel_size  # These are the cell sizes along each axis
 # Add the data values to the cell data
 grid.cell_arrays["values"] = values.flatten(order="F")  # Flatten the array!
 
-# filtering
+# filtering the voxels
 threshed = grid.threshold([0.9, 1.1])
 outline = grid.outline()
 
-# Now plot the grid!
-# grid.plot(show_edges=True)
+# loading the base mesh
 mesh = pv.read("Examples/IN/bunny.obj")
+
+# Main Plotting:
+
+# initiating the plotter
 p = pv.Plotter()
+
+# adding the base mesh
 p.add_mesh(mesh, show_edges=True, color='white', opacity=0.3)
+
+# adding the boundingbox wireframe
 p.add_mesh(outline, color="k")
+
+# adding the voxel centeroids
 p.add_mesh(pv.PolyData(points), color='red',
            point_size=15, render_points_as_spheres=True)
+
+# adding the hit points
 p.add_mesh(pv.PolyData(hits), color='blue',
-           point_size=10, render_points_as_spheres=True)
-p.add_mesh(threshed, show_edges=True, color="white", opacity=0.3)
+           point_size=12, render_points_as_spheres=True)
+
+# adding the voxels
+p.add_mesh(threshed, show_edges=True, color="white", opacity=0.5)
+
+# plotting
 p.show()
