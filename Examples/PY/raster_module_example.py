@@ -33,31 +33,31 @@ geo_mesh = Mesh.from_obj('Examples/IN/bunny.obj')
 # Rasterization
 ####################################################
 
-volume, points = volpy.rasterization(
+volume, points, hits = volpy.rasterization(
     geo_mesh, voxel_size, multi_core_process=True, return_points=True)
 
 ####################################################
 # OUTPUTS
 ####################################################
 
-vol_filepath = 'Examples/PY_OUT/bunny_volume.csv'
-vol_metadata = pd.Series(
-    [
-        (f'voxel_size:{vs}-{vs}-{vs}'),
-        ('name: bunny')
-    ])
+# vol_filepath = 'Examples/PY_OUT/bunny_volume.csv'
+# vol_metadata = pd.Series(
+#     [
+#         (f'voxel_size:{vs}-{vs}-{vs}'),
+#         ('name: bunny')
+#     ])
 
-volpy.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
+# volpy.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
 
 
-pnt_filepath = 'Examples/PY_OUT/bunny_voxels.csv'
-pnt_metadata = pd.Series(
-    [
-        (f'voxel_size:{vs}-{vs}-{vs}'),
-        ('name: bunny')
-    ])
+# pnt_filepath = 'Examples/PY_OUT/bunny_voxels.csv'
+# pnt_metadata = pd.Series(
+#     [
+#         (f'voxel_size:{vs}-{vs}-{vs}'),
+#         ('name: bunny')
+#     ])
 
-volpy.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
+# volpy.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
 
 
 ####################################################
@@ -78,20 +78,27 @@ mesh_bb = np.array(geo_mesh.bounding_box())
 mesh_bb_min = np.amin(mesh_bb, axis=0)
 
 # Edit the spatial reference
-grid.origin = mesh_bb_min  # The bottom left corner of the data set
+# The bottom left corner of the data set
+mesh_bb_min_rasterized = np.rint(mesh_bb_min / voxel_size) * voxel_size
+grid.origin = mesh_bb_min_rasterized - voxel_size * 0.5
 grid.spacing = voxel_size  # These are the cell sizes along each axis
 
 # Add the data values to the cell data
 grid.cell_arrays["values"] = values.flatten(order="F")  # Flatten the array!
 
 # filtering
-threshed = grid.threshold([0.5, 1.5])
+threshed = grid.threshold([0.9, 1.1])
 outline = grid.outline()
 
 # Now plot the grid!
 # grid.plot(show_edges=True)
-
+mesh = pv.read("Examples/IN/bunny.obj")
 p = pv.Plotter()
+p.add_mesh(mesh, show_edges=True, color='white', opacity=0.3)
 p.add_mesh(outline, color="k")
-p.add_mesh(threshed, show_edges=True, color="white")
+p.add_mesh(pv.PolyData(points), color='red',
+           point_size=15, render_points_as_spheres=True)
+p.add_mesh(pv.PolyData(hits), color='blue',
+           point_size=10, render_points_as_spheres=True)
+p.add_mesh(threshed, show_edges=True, color="white", opacity=0.3)
 p.show()

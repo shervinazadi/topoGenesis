@@ -31,8 +31,10 @@ def raster_intersect(geo_mesh, face, voxel_size, mesh_bb_size, ray_orig_ind, ray
     proj_ray_orig = ray_orig_ind * voxel_size * (1 - ray_dir)
 
     # check if any coordinate of the projected ray origin is in betwen the max and min of the coordinates of the face
-    min_con = proj_ray_orig >= np.amin(face_verticies_xyz, axis=0)*(1 - ray_dir)
-    max_con = proj_ray_orig <= np.amax(face_verticies_xyz, axis=0)*(1 - ray_dir)
+    min_con = proj_ray_orig >= np.amin(
+        face_verticies_xyz, axis=0)*(1 - ray_dir)
+    max_con = proj_ray_orig <= np.amax(
+        face_verticies_xyz, axis=0)*(1 - ray_dir)
     in_range_rays = np.all(min_con * max_con, axis=1)
 
     # retrieve the ray indicies that are in range
@@ -152,13 +154,14 @@ def rasterization(geo_mesh, voxel_size, tol=1e-06, **kwargs):
     ####################################################
 
     # Z3 to R3
+    # hit_unq_pos = (hit_unq_ind - mesh_bb_min_z3) * voxel_size + mesh_bb_min
     hit_unq_pos = hit_unq_ind * voxel_size
 
     # set values in the volumetric data
     vol[hit_vol_ind[0], hit_vol_ind[1], hit_vol_ind[2]] = 1
 
     if return_points:
-        return (vol, hit_unq_pos)
+        return (vol, hit_unq_pos, hit_positions)  # return (vol, hit_unq_pos)
     else:
         return vol
 
