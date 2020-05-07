@@ -22,6 +22,14 @@ __email__ = "shervinazadi93@gmail.com"
 __status__ = "Dev"
 
 ####################################################
+# ATTENTION!!!
+####################################################
+# Content of this file has een implemented in VolPy
+# module, try using that module for more updated
+# version of this algorithm
+####################################################
+
+####################################################
 # INPUTS
 ####################################################
 
@@ -95,7 +103,7 @@ in_rang_ind = np.argwhere(in_range_rays).flatten()
 #print(np.amin(face_verticies_xyz, axis=0))
 #print(np.amax(face_verticies_xyz, axis=0))
 #print(np.c_[proj_ray_orig, min_con, max_con, in_range_rays])
-sel = ray_orig_ind[in_rang_ind]- mesh_bb_min_z3
+sel = ray_orig_ind[in_rang_ind] - mesh_bb_min_z3
 
 faces = np.array([3, 0, 1, 2])
 surf = pv.PolyData(face_verticies_xyz, faces)

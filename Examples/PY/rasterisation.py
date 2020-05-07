@@ -19,6 +19,14 @@ __email__ = "shervinazadi93@gmail.com"
 __status__ = "Dev"
 
 ####################################################
+# ATTENTION!!!
+####################################################
+# Content of this file has een implemented in VolPy
+# module, try using that module for more updated
+# version of this algorithm
+####################################################
+
+####################################################
 # INPUTS
 ####################################################
 
@@ -155,5 +163,7 @@ vol_df = pd.DataFrame(
      })
 
 # save to csv
-hit_unq_pos_df.to_csv('Examples/PY_OUT/bunny_voxels.csv', index=True, float_format='%g')
-vol_df.to_csv('Examples/PY_OUT/bunny_volume.csv', index=False, float_format='%g')
+hit_unq_pos_df.to_csv('Examples/PY_OUT/bunny_voxels.csv',
+                      index=True, float_format='%g')
+vol_df.to_csv('Examples/PY_OUT/bunny_volume.csv',
+              index=False, float_format='%g')

@@ -27,7 +27,7 @@ __status__ = "Dev"
 
 vs = 0.01
 voxel_size = np.array([vs, vs, vs])
-tol = 1e-09  # this was the problem
+tol = 1e-09
 geo_mesh = ds.Mesh.from_obj('Examples/IN/bunny.obj')
 
 ####################################################
@@ -41,6 +41,7 @@ volume, points, hits = volpy.rasterization(
 # OUTPUTS
 ####################################################
 
+# Save the volumetric data model
 vol_filepath = 'Examples/PY_OUT/bunny_volume.csv'
 vol_metadata = pd.Series(
     [
@@ -50,7 +51,7 @@ vol_metadata = pd.Series(
 
 volpy.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
 
-
+# Save the point data model
 pnt_filepath = 'Examples/PY_OUT/bunny_voxels.csv'
 pnt_metadata = pd.Series(
     [
@@ -89,6 +90,8 @@ grid.cell_arrays["values"] = values.flatten(order="F")  # Flatten the array!
 
 # filtering the voxels
 threshed = grid.threshold([0.9, 1.1])
+
+# bounding box of the voxelation
 outline = grid.outline()
 
 # loading the base mesh
