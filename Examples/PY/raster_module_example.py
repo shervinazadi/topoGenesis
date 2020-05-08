@@ -10,7 +10,7 @@ import compas.datastructures as ds
 from compas.geometry import Translation
 import pyvista as pv
 
-import volpy
+import volpy as vp
 
 __author__ = "Shervin Azadi, and Pirouz Nourian"
 __copyright__ = "???"
@@ -34,7 +34,7 @@ geo_mesh = ds.Mesh.from_obj('Examples/IN/bunny.obj')
 # Rasterization
 ####################################################
 
-volume, points, hits = volpy.rasterization(
+volume, points, hits = vp.rasterization(
     geo_mesh, voxel_size, multi_core_process=True, return_points=True, tol=tol)
 
 ####################################################
@@ -49,7 +49,7 @@ vol_metadata = pd.Series(
         ('name: bunny')
     ])
 
-volpy.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
+vp.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
 
 # Save the point data model
 pnt_filepath = 'Examples/PY_OUT/bunny_voxels.csv'
@@ -59,7 +59,7 @@ pnt_metadata = pd.Series(
         ('name: bunny')
     ])
 
-volpy.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
+vp.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
 
 
 ####################################################

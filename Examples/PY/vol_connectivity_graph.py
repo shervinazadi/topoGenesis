@@ -76,9 +76,6 @@ replaced_columns = [np.roll(vol_flat_inds_3d_paded,
 # stacking the columns and removing the pads (and also removing the neighbours of the empty voxels since we have tagged them -1 like paddings)
 cell_neighbors = np.stack(replaced_columns, axis=-1)[origin_flat_ind]
 
-# print(cell_neighbors)
-# print(neighbors[0])
-
 ####################################################
 # Creating the graph
 ####################################################
@@ -110,7 +107,6 @@ real_neigh_ind = np.argwhere(neighs_flat != -1).ravel()
 cell_edge_order_trans = np.stack(
     [neighs_row_ind_flat[real_neigh_ind], neighs_flat[real_neigh_ind]])
 cell_edge_order = np.transpose(cell_edge_order_trans)
-
 
 # create graph and the edges
 G = nx.Graph()
