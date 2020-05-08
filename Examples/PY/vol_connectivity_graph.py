@@ -19,6 +19,14 @@ __email__ = "shervinazadi93@gmail.com"
 __status__ = "Dev"
 
 ####################################################
+# ATTENTION!!!
+####################################################
+# Content of this file has een implemented in VolPy
+# module, try using that module for more updated
+# version of this algorithm
+####################################################
+
+####################################################
 # INPUTS
 ####################################################
 
