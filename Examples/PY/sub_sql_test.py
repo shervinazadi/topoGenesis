@@ -1,28 +1,27 @@
 import sys
 import pandas as pd
+import sqlite3 as sq
 
 
-def main(points, prims, detail):
+def main(conn):
 
-    points += 1
+    result = 12
 
-    print(detail)
-    return (points, prims, detail)
+    return (result)
 
 
 if __name__ == '__main__':
     # read the argument
-    temp_path = sys.argv[1]
+    db_path = sys.argv[1]
 
-    # read csv
-    points = pd.read_csv(temp_path + '/points.csv')
-    prims = pd.read_csv(temp_path + '/prims.csv')
-    detail = pd.read_csv(temp_path + '/detail.csv')
+    # create db connection
+    conn = sq.connect(db_path)
 
     # execute
-    points, prims, detail = main(points, prims, detail)
+    result = main(conn)
+    print(result)
 
     # write csv
-    points.to_csv(temp_path + '/points_out.csv')
-    prims.to_csv(temp_path + '/prims_out.csv')
-    detail.to_csv(temp_path + '/detail_out.csv')
+    # points.to_csv(temp_path + '/points_out.csv')
+    # prims.to_csv(temp_path + '/prims_out.csv')
+    # detail.to_csv(temp_path + '/detail_out.csv')
