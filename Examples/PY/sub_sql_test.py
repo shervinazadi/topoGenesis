@@ -5,6 +5,8 @@ import sqlite3 as sq
 
 def main(points, prims, detail):
 
+    points['P_Y'] += 1
+
     return (points, prims, detail)
 
 
