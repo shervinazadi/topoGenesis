@@ -3,11 +3,9 @@ import pandas as pd
 import sqlite3 as sq
 
 
-def main(conn):
+def main(points, prims, detail):
 
-    result = 12
-
-    return (result)
+    return (points, prims, detail)
 
 
 if __name__ == '__main__':
@@ -17,11 +15,18 @@ if __name__ == '__main__':
     # create db connection
     conn = sq.connect(db_path)
 
-    # execute
-    result = main(conn)
-    print(result)
+    # create curser
+    cursor = conn.cursor()
 
-    # write csv
-    # points.to_csv(temp_path + '/points_out.csv')
-    # prims.to_csv(temp_path + '/prims_out.csv')
-    # detail.to_csv(temp_path + '/detail_out.csv')
+    # retrieve all data to panda dataframe
+    points = pd.read_sql_query("SELECT * FROM POINTS", conn)
+    prims = pd.read_sql_query("SELECT * FROM PRIMITIVES", conn)
+    detail = pd.read_sql_query("SELECT * FROM DETAIL", conn)
+
+    # execute
+    points, prims, detail = main(points, prims, detail)
+
+    # write to db
+    points.to_sql(name="POINTS_NEW", con=conn)
+    prims.to_sql(name="PRIMITIVES_NEW", con=conn)
+    detail.to_sql(name="DETAIL_NEW", con=conn)
