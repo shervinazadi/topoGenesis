@@ -26,9 +26,14 @@ Notice:
 Upcoming Features:
 
 - Support of vertex table
-- Support of selective attribute transfer to reduce the overhead
+- Support of selective attribute transfer to resduce the overhead
 - Support of list attributes
 - Support of intrinsic attributes
+- Support of writing python code inside houdini interface
+- Saving the databse file in the temp folder of the computer instead of the working directory
+- Ability to create new attributes
+- Ability to create and delete points
+- Ability to create and delete primitives
 
 ---
 
