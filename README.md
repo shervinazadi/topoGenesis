@@ -6,7 +6,7 @@ This is the draft of the python modules that are currently being developed by [S
 
 ## Houdni Assets
 
-### 1. [GSS Call Python](https://github.com/shervinazadi/Call_Python)
+### 1. [GSS Call Python](https://github.com/shervinazadi/GSS_Call_Python)
 
 This asset allows the user to choose a python file and choose a specfic python environment and run the python script within the selected environment. This allows for separation of environments through a workflow and also solves the problem of importing libraries in houdini completely. This asset is compatible with conda environments as well.
 
