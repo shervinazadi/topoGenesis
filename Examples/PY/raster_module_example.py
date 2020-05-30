@@ -25,7 +25,7 @@ __status__ = "Dev"
 # INPUTS
 ####################################################
 
-vs = 0.01
+vs = 0.025
 voxel_size = np.array([vs, vs, vs])
 tol = 1e-09
 geo_mesh = ds.Mesh.from_obj('Examples/IN/bunny.obj')
@@ -45,8 +45,9 @@ volume, points, hits = vp.rasterization(
 vol_filepath = 'Examples/PY_OUT/bunny_volume.csv'
 vol_metadata = pd.Series(
     [
-        (f'voxel_size:{vs}-{vs}-{vs}'),
-        ('name: bunny')
+        (f'voxel_size-{vs}-{vs}-{vs}'),
+        (f'volume_shape-{volume.shape[0]}-{volume.shape[1]}-{volume.shape[2]}'),
+        ('name-bunny')
     ])
 
 vp.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
@@ -61,13 +62,22 @@ pnt_metadata = pd.Series(
 
 vp.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
 
+# Save the hitpoints to point data model
+pnt_filepath = 'Examples/PY_OUT/bunny_hitpoints.csv'
+pnt_metadata = pd.Series(
+    [
+        ('name: bunny hit points')
+    ])
+
+vp.pnts_to_csv(hits, pnt_filepath, metadata=pnt_metadata)
+
 
 ####################################################
 # Visualization : PyVista
 ####################################################
 
 values = volume
-
+print(values.shape)
 # Create the spatial reference
 grid = pv.UniformGrid()
 
@@ -101,23 +111,30 @@ mesh = pv.read("Examples/IN/bunny.obj")
 
 # initiating the plotter
 p = pv.Plotter()
+p.set_background("black")
 
-# adding the base mesh
-p.add_mesh(mesh, show_edges=True, color='white', opacity=0.3)
+# adding the base mesh: light blue
+p.add_mesh(mesh, show_edges=True, color='#abd8ff',
+           opacity=0.4, label="Base Mesh")
 
 # adding the boundingbox wireframe
-p.add_mesh(outline, color="k")
+p.add_mesh(outline, color="grey", label="Rasterization Domain")
 
-# adding the voxel centeroids
-p.add_mesh(pv.PolyData(points), color='red',
-           point_size=15, render_points_as_spheres=True)
+# adding the hit points: blue
+p.add_mesh(pv.PolyData(hits), color='#2499ff',
+           point_size=12, render_points_as_spheres=True, label="Intersection Points")
 
-# adding the hit points
-p.add_mesh(pv.PolyData(hits), color='blue',
-           point_size=12, render_points_as_spheres=True)
 
-# adding the voxels
-p.add_mesh(threshed, show_edges=True, color="white", opacity=0.5)
+# adding the voxel centeroids: red
+p.add_mesh(pv.PolyData(points), color='#ff244c',
+           point_size=15, render_points_as_spheres=True, label="Voxel Centroids")
+
+# adding the voxels: light red
+p.add_mesh(threshed, show_edges=True, color="#ff8fa3",
+           opacity=0.3, label="Voxels")
+
+# adding the legend
+p.add_legend(bcolor=[0.1, 0.1, 0.1], border=True, size=[0.1, 0.1])
 
 # plotting
 p.show()
