@@ -10,4 +10,5 @@ val = np.sin(X * Y * Z) / (X * Y * Z)
 
 grad_val = vp.gradient(val)
 
-print(grad_val)
+print(grad_val.shape)
+print(val.shape)

@@ -23,6 +23,6 @@ def gradient(val):
     dz = (val[1:-1, 1:-1, :-2] - val[1:-1, 1:-1, 2:]) * 0.5
 
     # stack gradient
-    d = np.stack([dx, dy, dz], axis=3)
+    d = np.stack([dx, dy, dz], axis=0)
 
     return(d)
