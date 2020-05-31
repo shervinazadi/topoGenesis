@@ -17,10 +17,12 @@ __status__ = "Dev"
 
 def gradient(val):
 
-    dx = (val[:-2, 1:-1, 1:-1] - val[2:, 1:-1, 1:-1])*0.5
-    dy = (val[1:-1, :-2, 1:-1] - val[1:-1, 2:, 1:-1])*0.5
-    dz = (val[1:-1, 1:-1, :-2] - val[1:-1, 1:-1, 2:])*0.5
+    # gradient component
+    dx = (val[:-2, 1:-1, 1:-1] - val[2:, 1:-1, 1:-1]) * 0.5
+    dy = (val[1:-1, :-2, 1:-1] - val[1:-1, 2:, 1:-1]) * 0.5
+    dz = (val[1:-1, 1:-1, :-2] - val[1:-1, 1:-1, 2:]) * 0.5
 
-    d = np.stack(dx, dy, dz)
+    # stack gradient
+    d = np.stack([dx, dy, dz], axis=3)
 
     return(d)
