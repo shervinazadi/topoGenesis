@@ -1,16 +1,6 @@
-# GSS-Lab Python Modules + Python-Houdini Setup
+# VolPy
 
-This is the draft of the python modules that are currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at GSS-Lab, Department of Architectural Engineering and Technology, at TU Delft. These modules are mainly working with volumetric data-sets and fields. We also include an example folder that contains example algorithms that utilizes the modules and a standard setup for using [Houdini](https://www.sidefx.com/) as the Visualizer for algorithms.
-
----
-
-## Houdni Assets
-
-### 1. [GSS Call Python](https://github.com/shervinazadi/GSS_Call_Python)
-
-This asset allows the user to choose a python file and choose a specfic python environment and run the python script within the selected environment. This allows for separation of environments through a workflow and also solves the problem of importing libraries in houdini completely. This asset is compatible with conda environments as well.
-
----
+VolPy is a python package for scientific computing with volumetric data. VolPy is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at GSS-Lab, Department of Architectural Engineering and Technology, at TU Delft. We also include an example folder that contains example algorithms that utilizes the modules and a standard setup for using [Houdini](https://www.sidefx.com/) as the Visualizer for algorithms.
 
 ## Module Installation
 
@@ -52,19 +42,6 @@ to make sure that the terminal inside VS Code is using the same python as your c
     }
 ```
 
----
+## GSS-Lab
 
-## To Do
-
-Checkout & Compare:
-
-- https://wiki.python.org/moin/NumericAndScientific
-- [numdifftools](https://github.com/pbrod/numdifftools)
-- [fipy](https://www.ctcms.nist.gov/fipy/)
-- http://hplgit.github.io/pyhpc/doc/pub/._project001.html
-- https://www.math.ubc.ca/~pwalls/math-python/differentiation/differentiation/
-- [scipy laplacian](https://mail.python.org/pipermail/scipy-user/2013-April/034452.html)
-
-Coding Style:
-
-- [PEP8](https://www.python.org/dev/peps/pep-0008/)
+This project is part of the [Generative Sciences & Systems Lab Setup](https://github.com/shervinazadi/GSS_PyHou_Setup). It is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nouria](https://github.com/Pirouz-Nourian) at GSS-Lab, Department of Architectural Engineering and Technology, at TU Delft.
