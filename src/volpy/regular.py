@@ -15,6 +15,12 @@ __email__ = "shervinazadi93@gmail.com"
 __status__ = "Dev"
 
 
-def regularization(pointcloud):
-    vol = pointcloud
-    return(vol)
+def regularization(point_cloud, voxel_size):
+    # finding the closest voxel to each point
+    vox_ind = np.rint(point_cloud / voxel_size)
+    # removing repetitions
+    unique_vox_ind = np.unique(vox_ind, axis=0)
+    # mapping the voxel indicies to real space
+    reg_pnt = unique_vox_ind * voxel_size
+
+    return(reg_pnt)
