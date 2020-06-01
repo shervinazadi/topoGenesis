@@ -1,6 +1,6 @@
 # VolPy
 
-VolPy is a python package for scientific computing with volumetric data. VolPy is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at GSS-Lab, Department of Architectural Engineering and Technology, at TU Delft. We also include an example folder that contains example algorithms that utilizes the modules and a standard setup for using [Houdini](https://www.sidefx.com/) as the Visualizer for algorithms.
+VolPy is a python package for scientific computing with volumetric data.
 
 ## Module Installation
 
