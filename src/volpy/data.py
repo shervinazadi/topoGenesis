@@ -21,6 +21,12 @@ class lattice(np.ndarray):
         # calculating shape based on bounds and unit
         shape = np.rint((maxbound - minbound) / unit).astype(int)
 
+        # set defualt value
+        if default_value != None:
+            buffer = np.tile(
+                default_value, shape)
+            #obj = obj * 0 + default_value
+
         # Create the ndarray instance of our type, given the usual
         # ndarray input arguments.  This will call the standard
         # ndarray constructor, but return an object of our type.
@@ -29,9 +35,6 @@ class lattice(np.ndarray):
                                               buffer, offset, strides,
                                               order)
 
-        # set defualt value
-        if default_value != None:
-            obj = obj*0 + default_value
         # set the  'bounds' attribute
         obj.bounds = bounds
 
@@ -78,3 +81,70 @@ class lattice(np.ndarray):
     @property
     def maxbound(self):
         return self.bounds[1]
+
+
+class cloud(np.ndarray):
+
+    def __new__(subtype, point_array, dtype=float, buffer=None, offset=0,
+                strides=None, order=None):
+
+        # extracting the shape from point_array
+        shape = point_array.shape
+        # using the point_array as the buffer
+        buffer = point_array
+
+        # Create the ndarray instance of our type, given the usual
+        # ndarray input arguments.  This will call the standard
+        # ndarray constructor, but return an object of our type.
+        # It also triggers a call to cloud.__array_finalize__
+        obj = super(cloud, subtype).__new__(subtype, shape, dtype,
+                                            buffer, offset, strides,
+                                            order)
+
+        # set the  'bounds' attribute
+        obj.bounds = np.array([obj.min(axis=0), obj.max(axis=0)])
+
+        # Finally, we must return the newly created object:
+        return obj
+
+    def __array_finalize__(self, obj):
+        # ``self`` is a new object resulting from
+        # ndarray.__new__(cloud, ...), therefore it only has
+        # attributes that the ndarray.__new__ constructor gave it -
+        # i.e. those of a standard ndarray.
+        #
+        # We could have got to the ndarray.__new__ call in 3 ways:
+        # From an explicit constructor - e.g. cloud():
+        #    obj is None
+        #    (we're in the middle of the cloud.__new__
+        #    constructor, and self.bounds will be set when we return to
+        #    cloud.__new__)
+        if obj is None:
+            return
+        # From view casting - e.g arr.view(cloud):
+        #    obj is arr
+        #    (type(obj) can be cloud)
+        # From new-from-template - e.g cloud[:3]
+        #    type(obj) is cloud
+        #
+        # Note that it is here, rather than in the __new__ method,
+        # that we set the default value for 'bounds', because this
+        # method sees all creation of default objects - with the
+        # cloud.__new__ constructor, but also with
+        # arr.view(cloud).
+        self.bounds = getattr(obj, 'bounds', None)
+        # We do not need to return anything
+
+    @property
+    def minbound(self):
+        return self.bounds[0]
+
+    @property
+    def maxbound(self):
+        return self.bounds[1]
+
+
+def scatter(bounds, count):
+    point_array = np.random.uniform(
+        bounds[0], bounds[1], (count, bounds.shape[1]))
+    return cloud(point_array)
