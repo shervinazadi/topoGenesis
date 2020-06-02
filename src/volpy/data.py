@@ -146,7 +146,17 @@ class cloud(np.ndarray):
         return self.bounds[1]
 
     def regularize(self, unit):
+        """[summary]
 
+        Arguments:
+            unit {[float or array of floats]} -- [the unit separation between cells of lattice]
+
+        Raises:
+            ValueError: [unit needs to be either a float or an array of floats that has the same dimension of the points in the point cloud]
+
+        Returns:
+            [lattice] -- [a boolian latice representing the rasterization of point cloud]
+        """
         unit = np.array(unit)
         if unit.size != 1 and unit.size != self.bounds.shape[1]:
             raise ValueError(
@@ -174,6 +184,15 @@ class cloud(np.ndarray):
 
 
 def scatter(bounds, count):
+    """[summary]
+
+    Arguments:
+        bounds {[2d array]} -- [array of two vectors, indicating the bounding box of the scattering envelope with a minimum and maximum of the bounding box]
+        count {[int]} -- [number of the points to scatter within the bounding box]
+
+    Returns:
+        [cloud] -- [returns a cloud object countaing the coordinates of the scattered points]
+    """
     point_array = np.random.uniform(
         bounds[0], bounds[1], (count, bounds.shape[1]))
     return cloud(point_array)

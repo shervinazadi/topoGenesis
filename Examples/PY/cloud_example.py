@@ -9,7 +9,7 @@ count = 10
 pc = vp.scatter(bounds, count)
 
 # regularizing random points into a lattice
-l, test = pc.regularize([1, 1, 1])
+l = pc.regularize([1, 1, 1])
 
 print(type(pc))
 print(pc)
