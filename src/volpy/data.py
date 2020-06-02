@@ -6,10 +6,20 @@ class lattice(np.ndarray):
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
                 strides=None, order=None):
 
+        # extracting min and max from bound
         minbound = np.array(bounds[0])
         maxbound = np.array(bounds[1])
+        # unit nparray
         unit = np.array(unit)
-        shape = np.rint((maxbound - minbound)/unit).astype(int)
+
+        # raise value error if the size of unit is neighter 1 nor the length of the minimum
+        if unit.size != 1 and unit.size != minbound.size:
+            raise ValueError(
+                'the length of unit array needs to be either 1 or equal to the min/max arrays')
+
+        # calculating shape based on bounds and unit
+        shape = np.rint((maxbound - minbound) / unit).astype(int)
+
         # Create the ndarray instance of our type, given the usual
         # ndarray input arguments.  This will call the standard
         # ndarray constructor, but return an object of our type.
@@ -17,8 +27,10 @@ class lattice(np.ndarray):
         obj = super(lattice, subtype).__new__(subtype, shape, dtype,
                                               buffer, offset, strides,
                                               order)
-        # set the new 'bounds' attribute to the value passed
+        # set the  'bounds' attribute
         obj.bounds = np.array(bounds)
+        # set the attribute 'unit' to itself if it has the same size as the minimum,
+        # if the size is 1, tile it with the size of minimum vector
         obj.unit = unit if unit.size == minbound.size else np.tile(
             unit, minbound.size)
         # Finally, we must return the newly created object:
