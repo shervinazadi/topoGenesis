@@ -7,7 +7,7 @@ class lattice(np.ndarray):
                 strides=None, order=None):
 
         minbound = np.array(bounds[0])
-        maxbound = np.array(bounds[0])
+        maxbound = np.array(bounds[1])
         unit = np.array(unit)
         shape = np.rint((maxbound - minbound)/unit).astype(int)
         # Create the ndarray instance of our type, given the usual

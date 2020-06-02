@@ -8,4 +8,4 @@ l = vp.lattice(bounds=[[0, 0, 0], [5, 5, 5]])
 # l_bool = vp.lattice(shape=(3, 3, 3), dtype=bool)
 # l_int = vp.lattice(shape=(3, 3, 3), dtype=int)
 
-print(l.unit)
+print(l)
