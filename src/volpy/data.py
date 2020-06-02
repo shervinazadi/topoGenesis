@@ -6,10 +6,12 @@ class lattice(np.ndarray):
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
                 strides=None, order=None, default_value=None):
 
-        # extracting min and max from bound
+        # extracting min and max from bound and discrtizing it
         bounds = np.array(bounds)
-        minbound = bounds[0]
-        maxbound = bounds[1]
+        minbound = np.rint(bounds[0] / unit).astype(int)
+        maxbound = np.rint(bounds[1] / unit).astype(int)
+        bounds = np.array([minbound, maxbound])
+
         # unit nparray
         unit = np.array(unit)
 
@@ -19,7 +21,7 @@ class lattice(np.ndarray):
                 'the length of unit array needs to be either 1 or equal to the min/max arrays')
 
         # calculating shape based on bounds and unit
-        shape = np.rint((maxbound - minbound) / unit).astype(int)
+        shape = 1 + maxbound - minbound
 
         # set defualt value
         if default_value != None:
@@ -37,7 +39,6 @@ class lattice(np.ndarray):
 
         # set the  'bounds' attribute
         obj.bounds = bounds
-
         # set the attribute 'unit' to itself if it has the same size as the minimum,
         # if the size is 1, tile it with the size of minimum vector
         obj.unit = unit if unit.size == minbound.size else np.tile(
@@ -70,6 +71,7 @@ class lattice(np.ndarray):
         # method sees all creation of default objects - with the
         # lattice.__new__ constructor, but also with
         # arr.view(lattice).
+        self.dis_bounds = getattr(obj, 'dis_bounds', None)
         self.bounds = getattr(obj, 'bounds', None)
         self.unit = getattr(obj, 'unit', None)
         # We do not need to return anything
@@ -142,6 +144,33 @@ class cloud(np.ndarray):
     @property
     def maxbound(self):
         return self.bounds[1]
+
+    def regularize(self, unit):
+
+        unit = np.array(unit)
+        if unit.size != 1 and unit.size != self.bounds.shape[1]:
+            raise ValueError(
+                'the length of unit array needs to be either 1 or equal to the dimension of point cloud')
+        elif unit.size == 1:
+            unit = np.tile(unit, (1, self.bounds.shape[1]))
+
+        # finding the closest voxel to each point
+        vox_ind = np.rint(self / unit)
+        # removing repetitions
+        unique_vox_ind = np.unique(vox_ind, axis=0).astype(int)
+        # mapping the voxel indicies to real space
+        reg_pnt = unique_vox_ind * unit
+
+        # initializing the volume
+        l = lattice([self.minbound, self.maxbound], unit=unit,
+                    dtype=bool, default_value=False)
+        # mapp the indicies to start from zero
+        mapped_ind = unique_vox_ind - l.bounds[0]
+
+        # setting the occupied voxels to True
+        l[mapped_ind[:, 0], mapped_ind[:, 1], mapped_ind[:, 2]] = True
+
+        return l
 
 
 def scatter(bounds, count):

@@ -45,6 +45,6 @@ def regularization(point_cloud, voxel_size, **kwargs):
         # setting the occupied voxels to 1
         vol[mapped_ind[:, 0], mapped_ind[:, 1], mapped_ind[:, 2]] = 1
 
-        return (reg_pnt, vol)
+        return(reg_pnt, vol)
     else:
         return(reg_pnt)
