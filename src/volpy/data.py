@@ -4,11 +4,12 @@ import numpy as np
 class lattice(np.ndarray):
 
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
-                strides=None, order=None):
+                strides=None, order=None, default_value=None):
 
         # extracting min and max from bound
-        minbound = np.array(bounds[0])
-        maxbound = np.array(bounds[1])
+        bounds = np.array(bounds)
+        minbound = bounds[0]
+        maxbound = bounds[1]
         # unit nparray
         unit = np.array(unit)
 
@@ -27,8 +28,13 @@ class lattice(np.ndarray):
         obj = super(lattice, subtype).__new__(subtype, shape, dtype,
                                               buffer, offset, strides,
                                               order)
+
+        # set defualt value
+        if default_value != None:
+            obj = obj*0 + default_value
         # set the  'bounds' attribute
-        obj.bounds = np.array(bounds)
+        obj.bounds = bounds
+
         # set the attribute 'unit' to itself if it has the same size as the minimum,
         # if the size is 1, tile it with the size of minimum vector
         obj.unit = unit if unit.size == minbound.size else np.tile(
@@ -64,3 +70,11 @@ class lattice(np.ndarray):
         self.bounds = getattr(obj, 'bounds', None)
         self.unit = getattr(obj, 'unit', None)
         # We do not need to return anything
+
+    @property
+    def minbound(self):
+        return self.bounds[0]
+
+    @property
+    def maxbound(self):
+        return self.bounds[1]
