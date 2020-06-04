@@ -1,4 +1,5 @@
 import numpy as np
+import pyvista as pv
 
 
 class lattice(np.ndarray):
@@ -84,6 +85,46 @@ class lattice(np.ndarray):
     def maxbound(self):
         return self.bounds[1]
 
+    @property
+    def centroids(self):
+        # extract the indicies of the True values
+        point_array = np.argwhere(self == True)
+        # move to minimum
+        point_array += self.minbound
+        # convert to float
+        point_array = point_array.astype(float)
+        # return as a point cloud
+        return cloud(point_array, dtype=float)
+
+    def fast_vis(self, plot, show_outline=True, show_centroids=True):
+
+        # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
+        grid = pv.UniformGrid()
+        grid.dimensions = np.array(self.shape) + 1
+        # The bottom left corner of the data set
+        grid.origin = self.minbound - self.unit * 0.5
+        grid.spacing = self.unit  # These are the cell sizes along each axis
+        # Add the data values to the cell data
+        grid.cell_arrays["values"] = self.flatten(
+            order="F").astype(float)  # Flatten the array!
+        # filtering the voxels
+        threshed = grid.threshold([0.9, 1.1])
+
+        # adding the voxels: light red
+        plot.add_mesh(threshed, show_edges=True, color="#ff8fa3",
+                      opacity=0.3, label="Cells")
+
+        if show_outline:
+            # adding the boundingbox wireframe
+            plot.add_mesh(grid.outline(), color="grey", label="Domain")
+
+        if show_centroids:
+            # adding the voxel centeroids: red
+            plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5,
+                          render_points_as_spheres=True, label="Cell Centroidss")
+
+        return plot
+
 
 class cloud(np.ndarray):
 
@@ -93,7 +134,7 @@ class cloud(np.ndarray):
         # extracting the shape from point_array
         shape = point_array.shape
         # using the point_array as the buffer
-        buffer = point_array
+        buffer = point_array.flatten(order="C")
 
         # Create the ndarray instance of our type, given the usual
         # ndarray input arguments.  This will call the standard
@@ -182,6 +223,14 @@ class cloud(np.ndarray):
 
         return l
 
+    def fast_vis(self, plot):
+
+        # adding the original point cloud: blue
+        plot.add_mesh(pv.PolyData(self), color='#2499ff',
+                      point_size=3, render_points_as_spheres=True, label="Original Point Cloud")
+
+        return plot
+
 
 def scatter(bounds, count):
     """[summary]
@@ -195,4 +244,10 @@ def scatter(bounds, count):
     """
     point_array = np.random.uniform(
         bounds[0], bounds[1], (count, bounds.shape[1]))
+    return cloud(point_array)
+
+
+def gen_from_csv(file_path, delimiter=','):
+
+    point_array = np.genfromtxt(file_path, delimiter=delimiter)
     return cloud(point_array)

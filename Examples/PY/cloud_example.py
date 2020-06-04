@@ -14,6 +14,5 @@ print(pc)
 # regularizing random points into a lattice
 l = pc.regularize([1, 1, 1])
 
-
 print(type(l))
 print(l)

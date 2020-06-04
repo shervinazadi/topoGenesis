@@ -32,7 +32,7 @@ outline = grid.outline()
 
 # initiating the plotter
 p = pv.Plotter()
-p.set_background("black")
+p.set_background([0.065, 0.065, 0.065])
 
 # adding the original point cloud: blue
 p.add_mesh(pv.PolyData(point_cloud), color='#2499ff',
