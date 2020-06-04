@@ -5,13 +5,15 @@ import numpy as np
 bounds = np.array([[0, 0, 0], [3, 3, 3]])
 count = 10
 
-# scattering random points
+# scattering random points and making a point cloud
 pc = vp.scatter(bounds, count)
+
+print(type(pc))
+print(pc)
 
 # regularizing random points into a lattice
 l = pc.regularize([1, 1, 1])
 
-print(type(pc))
-print(pc)
+
 print(type(l))
 print(l)

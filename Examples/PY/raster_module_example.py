@@ -28,7 +28,7 @@ __status__ = "Dev"
 vs = 0.025
 voxel_size = np.array([vs, vs, vs])
 tol = 1e-09
-geo_mesh = ds.Mesh.from_obj('Examples/IN/bunny.obj')
+geo_mesh = ds.Mesh.from_obj('Examples/SampleData/bunny.obj')
 
 ####################################################
 # Rasterization
@@ -42,7 +42,7 @@ volume, points, hits = vp.rasterization(
 ####################################################
 
 # Save the volumetric data model
-vol_filepath = 'Examples/PY_OUT/bunny_volume.csv'
+vol_filepath = 'Examples/SampleData/bunny_volume.csv'
 vol_metadata = pd.Series(
     [
         (f'voxel_size-{vs}-{vs}-{vs}'),
@@ -53,7 +53,7 @@ vol_metadata = pd.Series(
 vp.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
 
 # Save the point data model
-pnt_filepath = 'Examples/PY_OUT/bunny_voxels.csv'
+pnt_filepath = 'Examples/SampleData/bunny_voxels.csv'
 pnt_metadata = pd.Series(
     [
         (f'voxel_size:{vs}-{vs}-{vs}'),
@@ -63,7 +63,7 @@ pnt_metadata = pd.Series(
 vp.pnts_to_csv(points, pnt_filepath, metadata=pnt_metadata)
 
 # Save the hitpoints to point data model
-pnt_filepath = 'Examples/PY_OUT/bunny_hitpoints.csv'
+pnt_filepath = 'Examples/SampleData/bunny_hitpoints.csv'
 pnt_metadata = pd.Series(
     [
         ('name: bunny hit points')
@@ -105,13 +105,13 @@ threshed = grid.threshold([0.9, 1.1])
 outline = grid.outline()
 
 # loading the base mesh
-mesh = pv.read("Examples/IN/bunny.obj")
+mesh = pv.read("Examples/SampleData/bunny.obj")
 
 # Main Plotting:
 
 # initiating the plotter
 p = pv.Plotter()
-p.set_background("black")
+p.set_background([0.065, 0.065, 0.065])
 
 # adding the base mesh: light blue
 p.add_mesh(mesh, show_edges=True, color='#abd8ff',
