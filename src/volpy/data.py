@@ -301,3 +301,50 @@ def cloud_from_csv(file_path, delimiter=','):
 
     point_array = np.genfromtxt(file_path, delimiter=delimiter)
     return cloud(point_array)
+
+
+def find_neighbours(lattice, steps):
+
+    # flatten the lattice
+    lattice_flat = lattice.ravel()
+
+    print(lattice_flat)
+    """
+    # the id of voxels in a flatten shape (0,1,2, ... n)
+    vol_flat_inds = np.arange(vol.size)
+
+    # removing the indecies that are not filled in the volume
+    vol_flat_inds = ((vol_flat_inds + 1) * vol_flat) - 1
+
+    # reshape the 1dimensional indices of voxels into volume shape
+    vol_flat_inds_3d = vol_flat_inds.reshape(vol.shape)
+
+    # offset the volume with value -1
+    vol_paded = np.pad(vol, (1, 1), mode='constant', constant_values=(-1, -1))
+
+    # offset the 1-dimensional indices of the voxels that is rshaped to volume shape with value -1
+    vol_flat_inds_3d_paded = np.pad(vol_flat_inds_3d, (1, 1), mode='constant',
+                                    constant_values=(-1, -1))
+
+    vol_flat_inds_3d_paded_flat = vol_flat_inds_3d_paded.reshape(
+        vol_flat_inds_3d_paded.size)
+
+    # index of padded cells in flatten
+    origin_flat_ind = np.argwhere(vol_flat_inds_3d_paded_flat != -1).ravel()
+
+    # claculating all the possible shifts to apply to the array
+    shifts = np.array(list(itertools.product([0, -1, 1], repeat=3)))
+
+    # the number of steps that the neighbour is appart from the cell (setp=1 : 6 neighbour, step=2 : 18 neighbours, step=3 : 26 neighbours)
+    shift_steps = np.sum(np.absolute(shifts), axis=1)
+    chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
+    shifts = shifts[chosen_shift_ind]
+
+    # gattering all the replacements in the collumns
+    replaced_columns = [np.roll(vol_flat_inds_3d_paded,
+                                shift, np.arange(3)).ravel() for shift in shifts]
+
+    # stacking the columns and removing the pads (and also removing the neighbours of the empty voxels since we have tagged them -1 like paddings)
+    cell_neighbors = np.stack(replaced_columns, axis=-1)[origin_flat_ind]
+
+    return cell_neighbors"""
