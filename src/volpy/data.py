@@ -12,7 +12,7 @@ class lattice(np.ndarray):
         bounds = np.array(bounds)
         minbound = np.rint(bounds[0] / unit).astype(int)
         maxbound = np.rint(bounds[1] / unit).astype(int)
-        bounds = np.array([minbound, maxbound])
+        bounds = np.array([minbound, maxbound])*unit
 
         # unit nparray
         unit = np.array(unit)
@@ -76,7 +76,7 @@ class lattice(np.ndarray):
         # method sees all creation of default objects - with the
         # lattice.__new__ constructor, but also with
         # arr.view(lattice).
-        self.dis_bounds = getattr(obj, 'dis_bounds', None)
+        self.bounds = getattr(obj, 'bounds', None)
         self.bounds = getattr(obj, 'bounds', None)
         self.unit = getattr(obj, 'unit', None)
         self.connectivity = getattr(obj, 'connectivity', None)
@@ -223,6 +223,7 @@ class cloud(np.ndarray):
         # initializing the volume
         l = lattice([self.minbound, self.maxbound], unit=unit,
                     dtype=bool, default_value=False)
+
         # mapp the indicies to start from zero
         mapped_ind = unique_vox_ind - l.bounds[0]
 
@@ -241,7 +242,7 @@ class cloud(np.ndarray):
 
 
 class stencil(lattice):
-    """[This will be class based on the latice class]
+    """[This will be class based on the np array class]
 
     Args:
         lattice ([type]): [description]
@@ -263,6 +264,7 @@ def create_stencil(type_str, steps, clip=None):
         clip = steps
     # von neumann neighborhood
     if type_str == "von_neumann":
+        # https://en.wikipedia.org/wiki/Von_Neumann_neighborhood
         # claculating all the possible shifts to apply to the array
         shifts = np.array(list(itertools.product(
             list(range(-clip, clip+1)), repeat=3)))
@@ -276,6 +278,9 @@ def create_stencil(type_str, steps, clip=None):
 
         stencil = np.zeros((clip*2+1, clip*2+1, clip*2+1)).astype(int)
         stencil[locs[0], locs[1], locs[2]] = 1
+    elif type_str == "moore":
+        # https://en.wikipedia.org/wiki/Moore_neighborhood
+        raise NotImplementedError
     else:
         raise ValueError(
             'non-valid neighborhood type for stencil creation')
@@ -303,12 +308,45 @@ def cloud_from_csv(file_path, delimiter=','):
     return cloud(point_array)
 
 
+def lattice_from_csv(file_path):
+
+    # read the voxel 3-dimensional indices
+    ind_flat = np.genfromtxt(file_path, delimiter=',',
+                             skip_header=8, usecols=(0, 1, 2)).astype(int)
+
+    # read the voxel values
+    vol_flat = np.genfromtxt(
+        file_path, delimiter=',', skip_header=8, usecols=(3)).astype(int)
+
+    # read volume meta data
+    meta = np.genfromtxt(
+        file_path, delimiter='-', skip_header=1, max_rows=3, usecols=(1, 2, 3))
+    voxel_size = meta[0]
+    min_bound = meta[1]
+    volume_shape = meta[2].astype(int)
+    max_bound = min_bound + voxel_size * volume_shape
+
+    # reshape the 1d array to get 3d array
+    vol = vol_flat.reshape(volume_shape)
+
+    # initializing the lattice
+    l = lattice([min_bound, max_bound], unit=voxel_size,
+                dtype=bool, default_value=False)
+
+    # setting the latice equal to volume
+    l[ind_flat[:, 0], ind_flat[:, 1], ind_flat[:, 2]
+      ] = vol[ind_flat[:, 0], ind_flat[:, 1], ind_flat[:, 2]]
+
+    return l
+
+
 def find_neighbours(lattice, steps):
 
     # flatten the lattice
     lattice_flat = lattice.ravel()
 
     print(lattice_flat)
+    raise NotImplementedError
     """
     # the id of voxels in a flatten shape (0,1,2, ... n)
     vol_flat_inds = np.arange(vol.size)
