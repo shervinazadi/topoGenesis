@@ -44,6 +44,9 @@ class lattice(np.ndarray):
         # if the size is 1, tile it with the size of minimum vector
         obj.unit = unit if unit.size == minbound.size else np.tile(
             unit, minbound.size)
+
+        # init an empty connectivity
+        obj.connectivity = None
         # Finally, we must return the newly created object:
         return obj
 
@@ -75,6 +78,7 @@ class lattice(np.ndarray):
         self.dis_bounds = getattr(obj, 'dis_bounds', None)
         self.bounds = getattr(obj, 'bounds', None)
         self.unit = getattr(obj, 'unit', None)
+        self.connectivity = getattr(obj, 'connectivity', None)
         # We do not need to return anything
 
     @property
@@ -87,7 +91,7 @@ class lattice(np.ndarray):
 
     @property
     def centroids(self):
-        # extract the indicies of the True values
+        # extract the indicies of the True values # with sparse matrix we dont need to search
         point_array = np.argwhere(self == True)
         # move to minimum
         point_array += self.minbound
@@ -247,7 +251,7 @@ def scatter(bounds, count):
     return cloud(point_array)
 
 
-def gen_from_csv(file_path, delimiter=','):
+def cloud_from_csv(file_path, delimiter=','):
 
     point_array = np.genfromtxt(file_path, delimiter=delimiter)
     return cloud(point_array)

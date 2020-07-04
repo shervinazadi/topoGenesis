@@ -77,7 +77,7 @@ vp.pnts_to_csv(hits, pnt_filepath, metadata=pnt_metadata)
 ####################################################
 
 values = volume
-print(values.shape)
+
 # Create the spatial reference
 grid = pv.UniformGrid()
 

@@ -3,7 +3,7 @@ import pyvista as pv
 
 # read pint cloud from file
 point_cloud_path = "Examples/SampleData/PointCloud.csv"
-pc = vp.gen_from_csv(point_cloud_path)
+pc = vp.cloud_from_csv(point_cloud_path)
 
 # regularizing random points into a lattice
 l = pc.regularize([1, 1, 1])

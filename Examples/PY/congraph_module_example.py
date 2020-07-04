@@ -29,6 +29,7 @@ vol_3d_ind_flat = np.genfromtxt('Examples/IN/bunny_volume.csv',
 # read voxel valus
 vol_flat = np.genfromtxt('Examples/IN/bunny_volume.csv',
                          delimiter=',', skip_header=1, usecols=3).astype(int)
+
 # find the olume shape from indices
 vol_shape = np.amax(vol_3d_ind_flat, axis=0) + 1
 
