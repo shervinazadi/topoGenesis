@@ -1,5 +1,6 @@
 import numpy as np
 import pyvista as pv
+import itertools
 
 
 class lattice(np.ndarray):
@@ -129,6 +130,9 @@ class lattice(np.ndarray):
 
         return plot
 
+    def find_connectivity(self, stencil):
+        pass
+
 
 class cloud(np.ndarray):
 
@@ -234,6 +238,34 @@ class cloud(np.ndarray):
                       point_size=3, render_points_as_spheres=True, label="Original Point Cloud")
 
         return plot
+
+
+class stencil(lattice):
+    @property
+    def expanded(self):
+        return np.argwhere(self)
+
+
+def create_stencil(type_str, steps):
+
+    if type_str == "von_neumann":
+        # claculating all the possible shifts to apply to the array
+        shifts = np.array(list(itertools.product(
+            list(range(-steps, steps+1)), repeat=3)))
+
+        # the number of steps that the neighbour is appart from the cell (setp=1 : 6 neighbour, step=2 : 18 neighbours, step=3 : 26 neighbours)
+        shift_steps = np.sum(np.absolute(shifts), axis=1)
+        # check the number of steps
+        chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
+        # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
+        locs = np.transpose(shifts[chosen_shift_ind]) + steps
+
+        stencil = np.zeros((steps*2+1, steps*2+1, steps*2+1)).astype(int)
+        stencil[locs[0], locs[1], locs[2]] = 1
+    else:
+        raise ValueError(
+            'non-valid neighborhood type for stencil creation')
+    return stencil
 
 
 def scatter(bounds, count):
