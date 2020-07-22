@@ -543,7 +543,8 @@ def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
         # compas version
         # hit_pt = compas.geometry.intersection_line_triangle((orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         # Translated from Pirouz C#
-        hit_pt = TriangleLineIntersect((orig_pos, dest_pos), face_verticies_xyz, tol=tol)
+        hit_pt = TriangleLineIntersect(
+            (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         if hit_pt is not None:
             face_hit_pos.append(hit_pt)
 
@@ -595,20 +596,22 @@ def TriangleLineIntersect(L, Vx, tol):
             return None
     else:
         return None
-def surface_normal_newell(poly): 
-    #https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
-    #Newell Method explained here: https://www.researchgate.net/publication/324921216_Topology_On_Topology_and_Topological_Data_Models_in_Geometric_Modeling_of_Space
+
+
+def surface_normal_newell(poly):
+    # https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
+    # Newell Method explained here: https://www.researchgate.net/publication/324921216_Topology_On_Topology_and_Topological_Data_Models_in_Geometric_Modeling_of_Space
 
     n = np.array([0.0, 0.0, 0.0])
 
-    for i, v_curr in enumerate(poly):
-        v_next = poly[(i+1) % len(poly),:]
-        n[0] += (v_curr[1] - v_next[1]) * (v_curr[2] + v_next[2]) 
-        n[1] += (v_curr[2] - v_next[2]) * (v_curr[0] + v_next[0])
-        n[2] += (v_curr[0] - v_next[0]) * (v_curr[1] + v_next[1])
+    for i in range(3):
+        j = (i+1) % 3
+        n[0] += (poly[i][1] - poly[j][1]) * (poly[i][2] + poly[j][2])
+        n[1] += (poly[i][2] - poly[j][2]) * (poly[i][0] + poly[j][0])
+        n[2] += (poly[i][0] - poly[j][0]) * (poly[i][1] + poly[j][1])
 
     norm = np.linalg.norm(n)
-    if norm==0:
+    if norm == 0:
         raise ValueError('zero norm')
     else:
         normalised = n/norm
