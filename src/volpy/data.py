@@ -8,6 +8,7 @@ from compas.datastructures import Mesh
 import concurrent.futures
 import warnings
 
+
 class lattice(np.ndarray):
 
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
@@ -427,19 +428,21 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     hit_vol_ind = np.transpose(vol_ind_trans)
 
     # retieve the ray origin indicies
-    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1, 2, 0)).reshape(-1, 3) for d in range(dim_num)]
+    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1,
+                                                                   2, 0)).reshape(-1, 3) for d in range(dim_num)]
     ray_orig_ind = np.vstack(ray_orig_ind)
 
     # retrieve the direction of ray shooting for each origin point
     normals = np.identity(dim_num).astype(int)
     # tile(stamp) the X-ray direction with the (Y-direction * Z-direction) . Then repeat this for all dimensions
-    ray_dir = [np.tile(normals[d], (vol_size_off[(d+1)%dim_num]*vol_size_off[(d+2)%dim_num], 1)) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
+    ray_dir = [np.tile(normals[d], (vol_size_off[(d+1) % dim_num]*vol_size_off[(d+2) % dim_num], 1))
+               for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
     ray_dir = np.vstack(ray_dir)
 
     # project the ray origin + shift it with half of the voxel siz to move it to corners of the voxels
-    ray_orig = ray_orig_ind * unit + unit * -0.5 #* (1 - ray_dir)
+    ray_orig = ray_orig_ind * unit + unit * -0.5  # * (1 - ray_dir)
 
-    # project the ray origin 
+    # project the ray origin
     proj_ray_orig = ray_orig * (1 - ray_dir)
 
     ####################################################
@@ -454,7 +457,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             # submit the processes
             results = [executor.submit(
-                tri_intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig,ray_dir, tol) for face in geo_mesh.faces()]
+                tri_intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in geo_mesh.faces()]
             # fetch the results
             for f in concurrent.futures.as_completed(results):
                 hit_positions.extend(f.result())
@@ -462,7 +465,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
         # iterate over the faces
         for face in geo_mesh.faces():
             face_hit_pos = tri_intersect(geo_mesh, face, unit, mesh_bb_size,
-                                            ray_orig, proj_ray_orig, ray_dir, tol)
+                                         ray_orig, proj_ray_orig, ray_dir, tol)
             hit_positions.extend(face_hit_pos)
 
     ####################################################
@@ -475,7 +478,8 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     # R3 to Z3 : scale with unit vector
     hit_pos_scaled = hit_positions / unit
     # shift the hit points in each 2-dimension (n in 1-normals) backward and formard (s in [-1,1]) and rint all the possibilities
-    hit_indicies = [np.rint(hit_pos_scaled + unit * n * s * 0.001) for n in (1-normals) for s in [-1,1]]
+    hit_indicies = [np.rint(hit_pos_scaled + unit * n * s * 0.001)
+                    for n in (1-normals) for s in [-1, 1]]
     hit_indicies = np.vstack(hit_indicies)
 
     # remove repeated points
@@ -505,10 +509,11 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
 
     return tuple(out)
 
+
 def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
     face_hit_pos = []
     face_verticies_xyz = geo_mesh.face_coordinates(face)
-    
+
     if len(face_verticies_xyz) != 3:
         return([])
 
@@ -535,12 +540,61 @@ def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
         dest_pos = orig_pos + ray_dir[ray] * mesh_bb_size
 
         # intersction
-        hit_pt = compas.geometry.intersection_line_triangle(
-            (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
+        # compas version
+        # hit_pt = compas.geometry.intersection_line_triangle((orig_pos, dest_pos), face_verticies_xyz, tol=tol)
+        # Translated from Pirouz C#
+        hit_pt = TriangleLineIntersect((orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         if hit_pt is not None:
             face_hit_pos.append(hit_pt)
-    
+
     return(face_hit_pos)
+
+
+def TriangleLineIntersect(L, Vx, tol):
+    if len(Vx) != 3:
+        raise ValueError('A triangle needs to have three vertexes')
+
+    # finding U & V vectors
+    O = Vx[0]
+    U = Vx[1] - Vx[0]
+    V = Vx[2] - Vx[0]
+    # finding normal vector
+    N = np.cross(U, V)
+
+    # finding the line start and end
+    PS = L[0]
+    PE = L[1]
+
+    Nomin = np.dot((O - PS), N)
+    Denom = np.dot(N, (PE - PS))
+
+    if Denom != 0:
+        alpha = Nomin / Denom
+
+        # parameter along the line where it intersects the plane in question, only if not paralell to the plane
+        P = PS + np.dot(alpha, (PE - PS))
+
+        W = P - O
+
+        UU = np.dot(U, U)
+        VV = np.dot(V, V)
+        UV = np.dot(U, V)
+        WU = np.dot(W, U)
+        WV = np.dot(W, V)
+
+        STDenom = UV**2 - UU * VV
+
+        s = (UV * WV - VV * WU) / STDenom
+        t = (UV * WU - UU * WV) / STDenom
+
+        Point = O + s * U + t * V
+
+        if s + tol >= 0 and t + tol >= 0 and s + t <= 1 + 2*tol:
+            return Point
+        else:
+            return None
+    else:
+        return None
 
     '''
       public bool TriangleLineIntersect(Rhino.Geometry.Point3d[] Vx, Rhino.Geometry.Line L)

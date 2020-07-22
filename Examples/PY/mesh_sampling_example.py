@@ -28,22 +28,23 @@ __status__ = "Dev"
 vs = 0.002
 voxel_size = np.array([vs, vs, vs])
 tol = 1e-09
-#dirpath=os.path.curdir
-#geo_path = os.path.join(dirpath,os.path.commonpath('Examples/SampleData/bunny_lowpoly.obj'))
-print('test'+'C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\src\\Examples\\SampleData\\bunny_lowpoly.obj')
-geo_path='C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\Examples\\SampleData\\bunny_lowpoly.obj'#os.path.abspath(r'Examples\SampleData\bunny_lowpoly.obj')#r'Examples/SampleData/bunny_lowpoly.obj'
+# dirpath=os.path.curdir
+# geo_path = os.path.join(dirpath,os.path.commonpath('Examples/SampleData/bunny_lowpoly.obj'))
+# print('test'+'C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\src\\Examples\\SampleData\\bunny_lowpoly.obj')
+# geo_path='C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\Examples\\SampleData\\bunny_lowpoly.obj'#os.path.abspath(r'Examples\SampleData\bunny_lowpoly.obj')#r'Examples/SampleData/bunny_lowpoly.obj'
+geo_path = 'Examples/SampleData/bunny_lowpoly.obj'
 geo_mesh = ds.Mesh.from_obj(geo_path)
 
 ####################################################
 # Rasterization
 ####################################################
 
-volume, centroids, samples, ray_origins = vp.mesh_sampling(geo_mesh, 
-                                            voxel_size, 
-                                            multi_core_process=False, return_centroids=True, 
-                                            return_samples=True, 
-                                            return_ray_origin=True, 
-                                            tol=tol)
+volume, centroids, samples, ray_origins = vp.mesh_sampling(geo_mesh,
+                                                           voxel_size,
+                                                           multi_core_process=False, return_centroids=True,
+                                                           return_samples=True,
+                                                           return_ray_origin=True,
+                                                           tol=tol)
 
 ####################################################
 # OUTPUTS
@@ -83,7 +84,7 @@ vp.pnts_to_csv(samples, pnt_filepath, metadata=pnt_metadata)
 ####################################################
 # Visualization : PyVista
 ####################################################
-
+"""
 values = volume
 
 # Create the spatial reference
@@ -120,25 +121,28 @@ mesh = pv.read(geo_path)
 # initiating the plotter
 p = pv.Plotter()
 # p.set_background([0.065, 0.065, 0.065]) # dark grey background
-p.set_background([1.0, 1.0, 1.0]) # with background
+p.set_background([1.0, 1.0, 1.0])  # with background
 
 # adding the boundingbox wireframe
 p.add_mesh(outline, color="grey", label="Sampling Domain")
 
 # adding the base mesh: light blue
-#p.add_mesh(mesh, show_edges=True, color='#abd8ff', opacity=0.4, label="Base Mesh")
+# p.add_mesh(mesh, show_edges=True, color='#abd8ff', opacity=0.4, label="Base Mesh")
 
 # adding the ray origins: dark blue
-p.add_mesh(pv.PolyData(ray_origins), color='#004887', point_size=4, render_points_as_spheres=True, label="Ray Origins")
+p.add_mesh(pv.PolyData(ray_origins), color='#004887', point_size=4,
+           render_points_as_spheres=True, label="Ray Origins")
 
 # adding the hit points: blue
-p.add_mesh(pv.PolyData(samples), color='#2499ff',point_size=8, render_points_as_spheres=True, label="Intersection Points")
+p.add_mesh(pv.PolyData(samples), color='#2499ff', point_size=8,
+           render_points_as_spheres=True, label="Intersection Points")
 
 # adding the voxel centeroids: red
-#p.add_mesh(pv.PolyData(centroids), color='#ff244c', point_size=15, render_points_as_spheres=True, label="Voxel Centroids")
+# p.add_mesh(pv.PolyData(centroids), color='#ff244c', point_size=15, render_points_as_spheres=True, label="Voxel Centroids")
 
 # adding the voxels: light red
-p.add_mesh(threshed, show_edges=True, color="#ff8fa3", opacity=1, label="Voxels")
+p.add_mesh(threshed, show_edges=True,
+           color="#ff8fa3", opacity=1, label="Voxels")
 
 # adding the legend
 p.add_legend(bcolor=[0.9, 0.9, .9], border=True, size=[0.1, 0.1])
@@ -147,4 +151,4 @@ p.add_legend(bcolor=[0.9, 0.9, .9], border=True, size=[0.1, 0.1])
 p.camera_position = [(0.25, 0.18, 0.5), (0, .1, 0), (0, 1, 0)]
 
 # plotting
-p.show()
+p.show()"""
