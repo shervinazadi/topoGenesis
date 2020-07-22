@@ -124,7 +124,6 @@ p.add_mesh(outline, color="grey", label="Rasterization Domain")
 p.add_mesh(pv.PolyData(hits), color='#2499ff',
            point_size=12, render_points_as_spheres=True, label="Intersection Points")
 
-
 # adding the voxel centeroids: red
 p.add_mesh(pv.PolyData(points), color='#ff244c',
            point_size=15, render_points_as_spheres=True, label="Voxel Centroids")
