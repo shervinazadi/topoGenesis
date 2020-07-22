@@ -2,7 +2,7 @@
 """
 Rasterizing a mesh to a volumetric datastructure
 """
-
+import os
 import numpy as np
 import pandas as pd
 import compas
@@ -28,7 +28,10 @@ __status__ = "Dev"
 vs = 0.002
 voxel_size = np.array([vs, vs, vs])
 tol = 1e-09
-geo_path = 'Examples/SampleData/bunny_lowpoly.obj'
+#dirpath=os.path.curdir
+#geo_path = os.path.join(dirpath,os.path.commonpath('Examples/SampleData/bunny_lowpoly.obj'))
+print('test'+'C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\src\\Examples\\SampleData\\bunny_lowpoly.obj')
+geo_path='C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\Examples\\SampleData\\bunny_lowpoly.obj'#os.path.abspath(r'Examples\SampleData\bunny_lowpoly.obj')#r'Examples/SampleData/bunny_lowpoly.obj'
 geo_mesh = ds.Mesh.from_obj(geo_path)
 
 ####################################################
@@ -45,7 +48,7 @@ volume, centroids, samples, ray_origins = vp.mesh_sampling(geo_mesh,
 ####################################################
 # OUTPUTS
 ####################################################
-
+'''
 # Save the volumetric data model
 vol_filepath = 'Examples/SampleData/bunny_volume.csv'
 vol_metadata = pd.Series(
@@ -75,7 +78,7 @@ pnt_metadata = pd.Series(
     ])
 
 vp.pnts_to_csv(samples, pnt_filepath, metadata=pnt_metadata)
-
+'''
 
 ####################################################
 # Visualization : PyVista
