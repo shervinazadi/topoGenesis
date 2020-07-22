@@ -464,8 +464,11 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     # round the positions to find the closest voxel
     hit_positions = np.array(hit_positions)
 
-    # R3 to Z3
-    hit_indicies = np.rint(hit_positions / unit)
+    # R3 to Z3 : scale with unit vector
+    hit_pos_scaled = hit_positions / unit
+    # shift the hit points in each dimension (n in normals) backward and formard (s in [-1,1]) and rint all the possibilities
+    hit_indicies = [np.rint(hit_pos_scaled + tol * n * s) for n in normals for s in [-1,1]]
+    hit_indicies = np.vstack(hit_indicies)
 
     # remove repeated points
     hit_unq_ind = np.unique(hit_indicies, axis=0)
