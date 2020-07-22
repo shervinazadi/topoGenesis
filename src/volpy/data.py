@@ -595,8 +595,29 @@ def TriangleLineIntersect(L, Vx, tol):
             return None
     else:
         return None
+def surface_normal_newell(poly): 
+    #https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
+    #Newell Method explained here: https://www.researchgate.net/publication/324921216_Topology_On_Topology_and_Topological_Data_Models_in_Geometric_Modeling_of_Space
+
+    n = np.array([0.0, 0.0, 0.0])
+
+    for i, v_curr in enumerate(poly):
+        v_next = poly[(i+1) % len(poly),:]
+        n[0] += (v_curr[1] - v_next[1]) * (v_curr[2] + v_next[2]) 
+        n[1] += (v_curr[2] - v_next[2]) * (v_curr[0] + v_next[0])
+        n[2] += (v_curr[0] - v_next[0]) * (v_curr[1] + v_next[1])
+
+    norm = np.linalg.norm(n)
+    if norm==0:
+        raise ValueError('zero norm')
+    else:
+        normalised = n/norm
+
+    return normalised
 
     '''
+    #Algorithm from http://geomalgorithms.com/a06-_intersect-2.html
+    # C# implementation from https://github.com/Pirouz-Nourian/Topological_Voxelizer_CSharp/blob/master/Voxelizer_Functions.cs
       public bool TriangleLineIntersect(Rhino.Geometry.Point3d[] Vx, Rhino.Geometry.Line L)
   {
     if (Vx.Length != 3) {

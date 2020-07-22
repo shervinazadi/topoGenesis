@@ -31,8 +31,8 @@ tol = 1e-09
 # dirpath=os.path.curdir
 # geo_path = os.path.join(dirpath,os.path.commonpath('Examples/SampleData/bunny_lowpoly.obj'))
 # print('test'+'C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\src\\Examples\\SampleData\\bunny_lowpoly.obj')
-# geo_path='C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\Examples\\SampleData\\bunny_lowpoly.obj'#os.path.abspath(r'Examples\SampleData\bunny_lowpoly.obj')#r'Examples/SampleData/bunny_lowpoly.obj'
-geo_path = 'Examples/SampleData/bunny_lowpoly.obj'
+geo_path='C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\Examples\\SampleData\\bunny_lowpoly.obj'#os.path.abspath(r'Examples\SampleData\bunny_lowpoly.obj')#r'Examples/SampleData/bunny_lowpoly.obj'
+#geo_path = 'Examples/SampleData/bunny_lowpoly.obj'
 geo_mesh = ds.Mesh.from_obj(geo_path)
 
 ####################################################
@@ -84,7 +84,7 @@ vp.pnts_to_csv(samples, pnt_filepath, metadata=pnt_metadata)
 ####################################################
 # Visualization : PyVista
 ####################################################
-"""
+
 values = volume
 
 # Create the spatial reference
@@ -151,4 +151,4 @@ p.add_legend(bcolor=[0.9, 0.9, .9], border=True, size=[0.1, 0.1])
 p.camera_position = [(0.25, 0.18, 0.5), (0, .1, 0), (0, 1, 0)]
 
 # plotting
-p.show()"""
+p.show()
