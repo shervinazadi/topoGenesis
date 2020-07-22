@@ -431,7 +431,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     # retrieve the direction of ray shooting for each origin point
     normals = np.identity(dim_num).astype(int)
     # tile(stamp) the X-ray direction with the (Y-direction * Z-direction) . Then repeat this for all dimensions
-    ray_dir = [np.tile(normals[d], (vol_size[(d+1)%dim_num]*vol_size[(d+2)%dim_num], 1)) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
+    ray_dir = [np.tile(normals[d], (vol_size_off[(d+1)%dim_num]*vol_size_off[(d+2)%dim_num], 1)) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
     ray_dir = np.vstack(ray_dir)
 
     ####################################################
@@ -498,8 +498,8 @@ def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol
 
     face_verticies_xyz = np.array(face_verticies_xyz)
 
-    # project the ray origin
-    proj_ray_orig = ray_orig_ind * unit * (1 - ray_dir)
+    # project the ray origin + shift it with half of the voxel siz to move it to corners of the voxels
+    proj_ray_orig = ray_orig_ind * unit * (1 - ray_dir) + unit * -0.5 * (1 - ray_dir)
 
     # check if any coordinate of the projected ray origin is in betwen the max and min of the coordinates of the face
     min_con = proj_ray_orig >= np.amin(
@@ -513,11 +513,11 @@ def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol
 
     # iterate over the rays
     for ray in in_rang_ind:
-
-        # calc ray origin position: Z3 to R3
-        orig_pos = ray_orig_ind[ray] * unit
         # retrieve ray direction
         direction = ray_dir[ray]
+        # compute ray origin position: Z3 to R3
+        # index * unit : center of the voxel + unit * -.5 * (1-direction) shifts the voxel to its lower-left corner
+        orig_pos = ray_orig_ind[ray] * unit + unit * -0.5 * (1 - direction)
         # calc the destination of ray (max distance that it needs to travel)
         # this line has a problem given the negative indicies are included now
         dest_pos = orig_pos + ray_dir[ray] * mesh_bb_size
