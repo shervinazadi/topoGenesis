@@ -389,7 +389,9 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
 
     dim_num = unit.size
     multi_core_process = kwargs.get('multi_core_process', False)
-    return_points = kwargs.get('return_points', False)
+    return_centroids = kwargs.get('return_centroids', False)
+    return_samples = kwargs.get('return_samples', False)
+    return_ray_origin = kwargs.get('return_ray_origin', False)
 
     # compare voxel size and tolerance and warn if it is not enough
     if min(unit) * 1e-06 < tol:
@@ -435,7 +437,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     ray_dir = np.vstack(ray_dir)
 
     # project the ray origin + shift it with half of the voxel siz to move it to corners of the voxels
-    ray_orig = ray_orig_ind * unit + unit * -0.5 * (1 - ray_dir)
+    ray_orig = ray_orig_ind * unit + unit * -0.5 #* (1 - ray_dir)
 
     # project the ray origin 
     proj_ray_orig = ray_orig * (1 - ray_dir)
@@ -472,8 +474,8 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
 
     # R3 to Z3 : scale with unit vector
     hit_pos_scaled = hit_positions / unit
-    # shift the hit points in each dimension (n in normals) backward and formard (s in [-1,1]) and rint all the possibilities
-    hit_indicies = [np.rint(hit_pos_scaled + tol * n * s) for n in normals for s in [-1,1]]
+    # shift the hit points in each 2-dimension (n in 1-normals) backward and formard (s in [-1,1]) and rint all the possibilities
+    hit_indicies = [np.rint(hit_pos_scaled + unit * n * s * 0.001) for n in (1-normals) for s in [-1,1]]
     hit_indicies = np.vstack(hit_indicies)
 
     # remove repeated points
@@ -493,10 +495,15 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     # set values in the volumetric data
     vol[hit_vol_ind[0], hit_vol_ind[1], hit_vol_ind[2]] = 1
 
-    if return_points:
-        return (vol, hit_unq_pos, hit_positions)  # return (vol, hit_unq_pos)
-    else:
-        return vol
+    out = [vol]
+    if return_centroids:
+        out.append(hit_unq_pos)
+    if return_samples:
+        out.append(hit_positions)
+    if return_ray_origin:
+        out.append(ray_orig)
+
+    return tuple(out)
 
 def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
     face_hit_pos = []
