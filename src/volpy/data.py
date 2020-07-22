@@ -552,6 +552,9 @@ def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
 
 
 def TriangleLineIntersect(L, Vx, tol):
+    # Algorithm from http://geomalgorithms.com/a06-_intersect-2.html
+    # C# implementation from https://github.com/Pirouz-Nourian/Topological_Voxelizer_CSharp/blob/master/Voxelizer_Functions.cs
+
     if len(Vx) != 3:
         raise ValueError('A triangle needs to have three vertexes')
 
@@ -598,6 +601,25 @@ def TriangleLineIntersect(L, Vx, tol):
         return None
 
 
+def surface_normal_newell_vectorized(poly):
+    # https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
+    # Newell Method explained here: https://www.researchgate.net/publication/324921216_Topology_On_Topology_and_Topological_Data_Models_in_Geometric_Modeling_of_Space
+
+    poly_10 = np.roll(poly, [-1, 0], np.arange(2))
+    poly_01 = np.roll(poly, [0, -1], np.arange(2))
+    poly_11 = np.roll(poly, [-1, -1], np.arange(2))
+
+    n = np.roll(np.sum((poly - poly_10) * (poly_01 + poly_11), axis=0), -1, 0)
+
+    norm = np.linalg.norm(n)
+    if norm == 0:
+        raise ValueError('zero norm')
+    else:
+        normalised = n/norm
+
+    return normalised
+
+
 def surface_normal_newell(poly):
     # https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
     # Newell Method explained here: https://www.researchgate.net/publication/324921216_Topology_On_Topology_and_Topological_Data_Models_in_Geometric_Modeling_of_Space
@@ -617,106 +639,3 @@ def surface_normal_newell(poly):
         normalised = n/norm
 
     return normalised
-
-    '''
-    #Algorithm from http://geomalgorithms.com/a06-_intersect-2.html
-    # C# implementation from https://github.com/Pirouz-Nourian/Topological_Voxelizer_CSharp/blob/master/Voxelizer_Functions.cs
-      public bool TriangleLineIntersect(Rhino.Geometry.Point3d[] Vx, Rhino.Geometry.Line L)
-  {
-    if (Vx.Length != 3) {
-     throw new Exception("Triangle is not valid!");
-    }
-    Point3d O = Vx[0];
-    Vector3d U = Vx[1] - O;
-    Vector3d V = Vx[2] - O;
-    Vector3d N = Vector3d.CrossProduct(U, V);
-    //plane normal
-
-    Point3d PS = L.From;//start point of the line
-    Point3d PE = L.To;  //end point of the line
-
-    double Nomin = ((O - PS) * N);
-    //operator * for dot product
-    double Denom = N * (PE - PS);
-
-    // only if the line is not paralell to the plane containing triangle T
-    if (Denom != 0) {
-      double alpha = Nomin / Denom;
-      // parameter along the line where it intersects the plane in question, only if not paralell to the plane
-      Point3d P = PS + alpha * (PE - PS);
-      //L.PointAt(alpha) '
-
-      Vector3d W = P - O;
-
-      double UU = U * U;
-      double VV = V * V;
-      double UV = U * V;
-      double WU = W * U;
-      double WV = W * V;
-
-      double STDenom = Math.Pow(UV, 2) - UU * VV;
-
-      double s = (UV * WV - VV * WU) / STDenom;
-      double t = (UV * WU - UU * WV) / STDenom;
-
-      Point3d Point = O + s * U + t * V;
-
-      if (s >= 0 & t >= 0 & s + t <= 1) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-  public bool TriangleLineIntersect(Rhino.Geometry.Point3d[] Vx, Rhino.Geometry.Vector3d Normal, Rhino.Geometry.Line L)
-  {
-    if (Vx.Length != 3) {
-      throw new Exception("Triangle is not valid!");
-    }
-    Point3d O = Vx[0];
-    Vector3d U = Vx[1] - O;
-    Vector3d V = Vx[2] - O;
-    Vector3d N = Normal;//Vector3d.CrossProduct(U, V);
-    //plane normal
-
-    Point3d PS = L.From;//start point of the line
-    Point3d PE = L.To;  //end point of the line
-
-    double Nomin = ((O - PS) * N);
-    //operator * for dot product
-    double Denom = N * (PE - PS);
-
-    // only if the line is not paralell to the plane containing triangle T
-    if (Denom != 0) {
-      double alpha = Nomin / Denom;
-      // parameter along the line where it intersects the plane in question, only if not paralell to the plane
-      Point3d P = PS + alpha * (PE - PS);
-      //L.PointAt(alpha) '
-
-      Vector3d W = P - O;
-
-      double UU = U * U;
-      double VV = V * V;
-      double UV = U * V;
-      double WU = W * U;
-      double WV = W * V;
-
-      double STDenom = Math.Pow(UV, 2) - UU * VV;
-
-      double s = (UV * WV - VV * WU) / STDenom;
-      double t = (UV * WU - UU * WV) / STDenom;
-
-      Point3d Point = O + s * U + t * V;
-
-      if (s >= 0 & t >= 0 & s + t <= 1) {
-        return true;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-    '''
