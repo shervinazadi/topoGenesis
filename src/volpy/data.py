@@ -426,8 +426,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     # ray_orig_ind = [np.concatenate(np.transpose(np.take(hit_vol_ind, 0, axis=d + 1))) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
     # ray_orig_ind = np.concatenate(tuple(ray_orig_ind), axis=0)
     # new way
-    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1,
-                                                                   2, 0)).reshape(-1, 3) for d in range(dim_num)]
+    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1,2, 0)).reshape(-1, 3) for d in range(dim_num)]
     ray_orig_ind = np.vstack(ray_orig_ind)
 
     # retrieve the direction of ray shooting for each origin point
@@ -491,11 +490,10 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     else:
         return vol
 
-    return(face_hit_pos)
-
 def raster_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol):
     face_hit_pos = []
     face_verticies_xyz = geo_mesh.face_coordinates(face)
+    
     if len(face_verticies_xyz) != 3:
         return([])
 
@@ -530,3 +528,5 @@ def raster_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, 
             (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         if hit_pt is not None:
             face_hit_pos.append(hit_pt)
+    
+    return(face_hit_pos)

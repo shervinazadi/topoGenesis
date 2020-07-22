@@ -35,7 +35,7 @@ geo_mesh = ds.Mesh.from_obj(geo_path)
 # Rasterization
 ####################################################
 
-volume, points, hits = vp.rasterization(geo_mesh, voxel_size, multi_core_process=False, return_points=True, tol=tol)
+volume, points, hits = vp.mesh_sampling(geo_mesh, voxel_size, multi_core_process=False, return_points=True, tol=tol)
 
 ####################################################
 # OUTPUTS
