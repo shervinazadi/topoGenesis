@@ -1,7 +1,12 @@
 import numpy as np
 import pyvista as pv
 import itertools
-
+import pandas as pd
+import networkx as nx
+import compas
+from compas.datastructures import Mesh
+import concurrent.futures
+import warnings
 
 class lattice(np.ndarray):
 
@@ -241,18 +246,6 @@ class cloud(np.ndarray):
         return plot
 
 
-class stencil(lattice):
-    """[This will be class based on the np array class]
-
-    Args:
-        lattice ([type]): [description]
-
-    Returns:
-        [type]: [description]
-    """
-    pass
-
-
 def expand_stencil(stencil):
     locations = np.argwhere(stencil) - (stencil.shape[0] - 1) / 2
     # calculating the distance of each neighbour
@@ -326,16 +319,16 @@ def lattice_from_csv(file_path):
     # read volume meta data
     meta = np.genfromtxt(
         file_path, delimiter='-', skip_header=1, max_rows=3, usecols=(1, 2, 3))
-    voxel_size = meta[0]
+    unit = meta[0]
     min_bound = meta[1]
     volume_shape = meta[2].astype(int)
-    max_bound = min_bound + voxel_size * volume_shape
+    max_bound = min_bound + unit * volume_shape
 
     # reshape the 1d array to get 3d array
     vol = vol_flat.reshape(volume_shape)
 
     # initializing the lattice
-    l = lattice([min_bound, max_bound], unit=voxel_size,
+    l = lattice([min_bound, max_bound], unit=unit,
                 dtype=bool, default_value=False)
 
     # setting the latice equal to volume
@@ -377,3 +370,163 @@ def find_neighbours(lattice, stencil):
     cell_neighbors = np.stack(replaced_columns, axis=-1)[origin_flat_ind]
 
     return cell_neighbors
+
+
+def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
+    """[summary]
+
+    Args:
+        geo_mesh ([COMPAS Mesh]): [description]
+        unit ([numpy array]): [description]
+        tol ([type], optional): [description]. Defaults to 1e-06.
+
+    Returns:
+        [type]: [description]
+    """
+    ####################################################
+    # INPUTS
+    ####################################################
+
+    dim_num = unit.size
+    multi_core_process = kwargs.get('multi_core_process', False)
+    return_points = kwargs.get('return_points', False)
+
+    # compare voxel size and tolerance and warn if it is not enough
+    if min(unit) * 1e-06 < tol:
+        warnings.warn(
+            "Warning! The tolerance for rasterization is not small enough, it may result in faulty results or failure of rasterization. Try decreasing the tolerance or scaling the geometry.")
+
+    ####################################################
+    # Initialize the volumetric array
+    ####################################################
+
+    # retrieve the bounding box information
+    mesh_bb = np.array(geo_mesh.bounding_box())
+    mesh_bb_min = np.amin(mesh_bb, axis=0)
+    mesh_bb_max = np.amax(mesh_bb, axis=0)
+    mesh_bb_size = mesh_bb_max - mesh_bb_min
+
+    # find the minimum index in discrete space
+    mesh_bb_min_z3 = np.rint(mesh_bb_min / unit).astype(int)
+    # calculate the size of voxelated volume
+    vol_size = np.ceil((mesh_bb_size / unit)+1).astype(int)
+    # initiate the 3d array of voxel space called volume
+    vol = np.zeros(vol_size)
+
+    ####################################################
+    # claculate the origin and direction of rays
+    ####################################################
+
+    # retriev the voxel index for ray origins
+    hit_vol_ind = np.indices(vol_size)
+    vol_ind_trans = np.transpose(hit_vol_ind) + mesh_bb_min_z3
+    hit_vol_ind = np.transpose(vol_ind_trans)
+
+    # old way
+    # ray_orig_ind = [np.concatenate(np.transpose(np.take(hit_vol_ind, 0, axis=d + 1))) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
+    # ray_orig_ind = np.concatenate(tuple(ray_orig_ind), axis=0)
+    # new way
+    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1,
+                                                                   2, 0)).reshape(-1, 3) for d in range(dim_num)]
+    ray_orig_ind = np.vstack(ray_orig_ind)
+
+    # retrieve the direction of ray shooting for each origin point
+    normals = np.identity(dim_num).astype(int)
+    ray_dir = [np.tile(normals[d], (np.take(vol, 0, axis=d).size, 1)) for d in range(
+        dim_num)]  # this line has a problem given the negative indicies are included now
+    ray_dir = np.vstack(ray_dir)
+
+    ####################################################
+    # intersection
+    ####################################################
+
+    hit_positions = []
+
+    # check if multiprocessing is allowed
+    if multi_core_process:
+        # open the context manager
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            # submit the processes
+            results = [executor.submit(
+                raster_intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol) for face in geo_mesh.faces()]
+            # fetch the results
+            for f in concurrent.futures.as_completed(results):
+                hit_positions.extend(f.result())
+    else:
+        # iterate over the faces
+        for face in geo_mesh.faces():
+            face_hit_pos = raster_intersect(geo_mesh, face, unit, mesh_bb_size,
+                                            ray_orig_ind, ray_dir, tol)
+            hit_positions.extend(face_hit_pos)
+
+    ####################################################
+    # convert hit positions into volumetric data
+    ####################################################
+
+    # round the positions to find the closest voxel
+    hit_positions = np.array(hit_positions)
+
+    # R3 to Z3
+    hit_indicies = np.rint(hit_positions / unit)
+
+    # remove repeated points
+    hit_unq_ind = np.unique(hit_indicies, axis=0)
+
+    # calculate volum indecies
+    hit_vol_ind = np.transpose(hit_unq_ind - mesh_bb_min_z3).astype(int)
+
+    ####################################################
+    # OUTPUTS
+    ####################################################
+
+    # Z3 to R3
+    # hit_unq_pos = (hit_unq_ind - mesh_bb_min_z3) * unit + mesh_bb_min
+    hit_unq_pos = hit_unq_ind * unit
+
+    # set values in the volumetric data
+    vol[hit_vol_ind[0], hit_vol_ind[1], hit_vol_ind[2]] = 1
+
+    if return_points:
+        return (vol, hit_unq_pos, hit_positions)  # return (vol, hit_unq_pos)
+    else:
+        return vol
+
+    return(face_hit_pos)
+
+def raster_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol):
+    face_hit_pos = []
+    face_verticies_xyz = geo_mesh.face_coordinates(face)
+    if len(face_verticies_xyz) != 3:
+        return([])
+
+    face_verticies_xyz = np.array(face_verticies_xyz)
+
+    # project the ray origin
+    proj_ray_orig = ray_orig_ind * unit * (1 - ray_dir)
+
+    # check if any coordinate of the projected ray origin is in betwen the max and min of the coordinates of the face
+    min_con = proj_ray_orig >= np.amin(
+        face_verticies_xyz, axis=0)*(1 - ray_dir)
+    max_con = proj_ray_orig <= np.amax(
+        face_verticies_xyz, axis=0)*(1 - ray_dir)
+    in_range_rays = np.all(min_con * max_con, axis=1)
+
+    # retrieve the ray indicies that are in range
+    in_rang_ind = np.argwhere(in_range_rays).flatten()
+
+    # iterate over the rays
+    for ray in in_rang_ind:
+
+        # calc ray origin position: Z3 to R3
+        orig_pos = ray_orig_ind[ray] * unit
+        # retrieve ray direction
+        direction = ray_dir[ray]
+        # calc the destination of ray (max distance that it needs to travel)
+        # this line has a problem given the negative indicies are included now
+        dest_pos = orig_pos + ray_dir[ray] * mesh_bb_size
+
+        # intersction
+        hit_pt = compas.geometry.intersection_line_triangle(
+            (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
+        if hit_pt is not None:
+            face_hit_pos.append(hit_pt)

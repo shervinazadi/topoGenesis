@@ -26,7 +26,7 @@ conda install pandas
 4. go to the source directory of volpy and install it locally within your environment with symlink:
 
 ```Shell Script
-cd GSS_PYHOU_SETUP/src
+cd VolPy/src
 python -m pip install -e .
 ```
 
