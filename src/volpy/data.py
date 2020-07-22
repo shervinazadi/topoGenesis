@@ -417,22 +417,21 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     # claculate the origin and direction of rays
     ####################################################
 
+    # increasing the vol_size by one to accomodate for shooting from corners
+    vol_size_off = vol_size + 1
     # retriev the voxel index for ray origins
-    hit_vol_ind = np.indices(vol_size)
+    hit_vol_ind = np.indices(vol_size_off)
     vol_ind_trans = np.transpose(hit_vol_ind) + mesh_bb_min_z3
     hit_vol_ind = np.transpose(vol_ind_trans)
 
-    # old way
-    # ray_orig_ind = [np.concatenate(np.transpose(np.take(hit_vol_ind, 0, axis=d + 1))) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
-    # ray_orig_ind = np.concatenate(tuple(ray_orig_ind), axis=0)
-    # new way
-    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1,2, 0)).reshape(-1, 3) for d in range(dim_num)]
+    # retieve the ray origin indicies
+    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1, 2, 0)).reshape(-1, 3) for d in range(dim_num)]
     ray_orig_ind = np.vstack(ray_orig_ind)
 
     # retrieve the direction of ray shooting for each origin point
     normals = np.identity(dim_num).astype(int)
-    ray_dir = [np.tile(normals[d], (np.take(vol, 0, axis=d).size, 1)) for d in range(
-        dim_num)]  # this line has a problem given the negative indicies are included now
+    # tile(stamp) the X-ray direction with the (Y-direction * Z-direction) . Then repeat this for all dimensions
+    ray_dir = [np.tile(normals[d], (vol_size[(d+1)%dim_num]*vol_size[(d+2)%dim_num], 1)) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
     ray_dir = np.vstack(ray_dir)
 
     ####################################################
@@ -447,14 +446,14 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             # submit the processes
             results = [executor.submit(
-                raster_intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol) for face in geo_mesh.faces()]
+                tri_intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol) for face in geo_mesh.faces()]
             # fetch the results
             for f in concurrent.futures.as_completed(results):
                 hit_positions.extend(f.result())
     else:
         # iterate over the faces
         for face in geo_mesh.faces():
-            face_hit_pos = raster_intersect(geo_mesh, face, unit, mesh_bb_size,
+            face_hit_pos = tri_intersect(geo_mesh, face, unit, mesh_bb_size,
                                             ray_orig_ind, ray_dir, tol)
             hit_positions.extend(face_hit_pos)
 
@@ -490,7 +489,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     else:
         return vol
 
-def raster_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol):
+def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig_ind, ray_dir, tol):
     face_hit_pos = []
     face_verticies_xyz = geo_mesh.face_coordinates(face)
     
