@@ -430,6 +430,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
 
     # retrieve the direction of ray shooting for each origin point
     normals = np.identity(dim_num).astype(int)
+    print(normals)
     # tile(stamp) the X-ray direction with the (Y-direction * Z-direction) . Then repeat this for all dimensions
     ray_dir = [np.tile(normals[d], (vol_size_off[(d+1)%dim_num]*vol_size_off[(d+2)%dim_num], 1)) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
     ray_dir = np.vstack(ray_dir)
@@ -464,8 +465,11 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     # round the positions to find the closest voxel
     hit_positions = np.array(hit_positions)
 
-    # R3 to Z3
-    hit_indicies = np.rint(hit_positions / unit)
+    # R3 to Z3 : scale with unit vector
+    hit_pos_scaled = hit_positions / unit
+    # shift the hit points in each dimension (n in normals) backward and formard (s in [-1,1]) and rint all the possibilities
+    hit_indicies = [np.rint(hit_pos_scaled + tol * n * s) for n in normals for s in [-1,1]]
+    hit_indicies = np.vstack(hit_indicies)
 
     # remove repeated points
     hit_unq_ind = np.unique(hit_indicies, axis=0)
