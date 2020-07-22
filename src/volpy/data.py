@@ -430,6 +430,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
 
     # retrieve the direction of ray shooting for each origin point
     normals = np.identity(dim_num).astype(int)
+    print(normals)
     # tile(stamp) the X-ray direction with the (Y-direction * Z-direction) . Then repeat this for all dimensions
     ray_dir = [np.tile(normals[d], (vol_size_off[(d+1)%dim_num]*vol_size_off[(d+2)%dim_num], 1)) for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
     ray_dir = np.vstack(ray_dir)
