@@ -100,10 +100,12 @@ class lattice(np.ndarray):
     def centroids(self):
         # extract the indicies of the True values # with sparse matrix we dont need to search
         point_array = np.argwhere(self == True)
-        # move to minimum
-        point_array += self.minbound
         # convert to float
         point_array = point_array.astype(float)
+        # multply by unit
+        point_array *= self.unit
+        # move to minimum
+        point_array += self.minbound
         # return as a point cloud
         return cloud(point_array, dtype=float)
 
@@ -200,11 +202,14 @@ class cloud(np.ndarray):
     def maxbound(self):
         return self.bounds[1]
 
-    def regularize(self, unit):
+    def regularize(self, unit, **kwargs):
         """[summary]
 
         Arguments:
             unit {[float or array of floats]} -- [the unit separation between cells of lattice]
+
+        Keyword Arguments:
+            closed {[Boolean]} -- [False by default. If the cell intervals are closed intervals or not.]
 
         Raises:
             ValueError: [unit needs to be either a float or an array of floats that has the same dimension of the points in the point cloud]
@@ -212,6 +217,9 @@ class cloud(np.ndarray):
         Returns:
             [lattice] -- [a boolian latice representing the rasterization of point cloud]
         """
+        ####################################################
+        # INPUTS
+        ####################################################
         unit = np.array(unit)
         if unit.size != 1 and unit.size != self.bounds.shape[1]:
             raise ValueError(
@@ -219,10 +227,26 @@ class cloud(np.ndarray):
         elif unit.size == 1:
             unit = np.tile(unit, (1, self.bounds.shape[1]))
 
-        # finding the closest voxel to each point
-        vox_ind = np.rint(self / unit)
+        closed = kwargs.get('closed', False)
+
+        ####################################################
+        # PROCEDURE
+        ####################################################
+
+        if closed:
+            # retrieve the identity matrix as a list of main axes
+            axes = np.identity(unit.size).astype(int)
+            # R3 to Z3 : finding the closest voxel to each point
+            point_scaled = self / unit
+            # shift the hit points in each 2-dimension (n in 1-axes) backward and formard (s in [-1,1]) and rint all the possibilities
+            vox_ind = [np.rint(point_scaled + unit * n * s * 0.001) for n in (1-axes) for s in [-1, 1]]
+            vox_ind = np.vstack(vox_ind)
+        else:
+            vox_ind = np.rint(self / unit).astype(int)
+
         # removing repetitions
         unique_vox_ind = np.unique(vox_ind, axis=0).astype(int)
+
         # mapping the voxel indicies to real space
         reg_pnt = unique_vox_ind * unit
 
@@ -231,10 +255,14 @@ class cloud(np.ndarray):
                     dtype=bool, default_value=False)
 
         # mapp the indicies to start from zero
-        mapped_ind = unique_vox_ind - l.bounds[0]
+        mapped_ind = unique_vox_ind - np.rint(l.bounds[0]/l.unit).astype(int)
 
         # setting the occupied voxels to True
         l[mapped_ind[:, 0], mapped_ind[:, 1], mapped_ind[:, 2]] = True
+
+        ####################################################
+        # OUTPUTS
+        ####################################################
 
         return l
 
@@ -242,7 +270,7 @@ class cloud(np.ndarray):
 
         # adding the original point cloud: blue
         plot.add_mesh(pv.PolyData(self), color='#2499ff',
-                      point_size=3, render_points_as_spheres=True, label="Original Point Cloud")
+                      point_size=3, render_points_as_spheres=True, label="Point Cloud")
 
         return plot
 
@@ -390,8 +418,6 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
 
     dim_num = unit.size
     multi_core_process = kwargs.get('multi_core_process', False)
-    return_centroids = kwargs.get('return_centroids', False)
-    return_samples = kwargs.get('return_samples', False)
     return_ray_origin = kwargs.get('return_ray_origin', False)
 
     # compare voxel size and tolerance and warn if it is not enough
@@ -449,7 +475,7 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     # intersection
     ####################################################
 
-    hit_positions = []
+    samples = []
 
     # check if multiprocessing is allowed
     if multi_core_process:
@@ -457,60 +483,31 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             # submit the processes
             results = [executor.submit(
-                tri_intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in geo_mesh.faces()]
+                intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in geo_mesh.faces()]
             # fetch the results
             for f in concurrent.futures.as_completed(results):
-                hit_positions.extend(f.result())
+                samples.extend(f.result())
     else:
         # iterate over the faces
         for face in geo_mesh.faces():
-            face_hit_pos = tri_intersect(geo_mesh, face, unit, mesh_bb_size,
+            face_hit_pos = intersect(geo_mesh, face, unit, mesh_bb_size,
                                          ray_orig, proj_ray_orig, ray_dir, tol)
-            hit_positions.extend(face_hit_pos)
-
-    ####################################################
-    # convert hit positions into volumetric data
-    ####################################################
-
-    # round the positions to find the closest voxel
-    hit_positions = np.array(hit_positions)
-
-    # R3 to Z3 : scale with unit vector
-    hit_pos_scaled = hit_positions / unit
-    # shift the hit points in each 2-dimension (n in 1-normals) backward and formard (s in [-1,1]) and rint all the possibilities
-    hit_indicies = [np.rint(hit_pos_scaled + unit * n * s * 0.001)
-                    for n in (1-normals) for s in [-1, 1]]
-    hit_indicies = np.vstack(hit_indicies)
-
-    # remove repeated points
-    hit_unq_ind = np.unique(hit_indicies, axis=0)
-
-    # calculate volum indecies
-    hit_vol_ind = np.transpose(hit_unq_ind - mesh_bb_min_z3).astype(int)
+            samples.extend(face_hit_pos)
 
     ####################################################
     # OUTPUTS
     ####################################################
 
-    # Z3 to R3
-    # hit_unq_pos = (hit_unq_ind - mesh_bb_min_z3) * unit + mesh_bb_min
-    hit_unq_pos = hit_unq_ind * unit
-
-    # set values in the volumetric data
-    vol[hit_vol_ind[0], hit_vol_ind[1], hit_vol_ind[2]] = 1
-
-    out = [vol]
-    if return_centroids:
-        out.append(hit_unq_pos)
-    if return_samples:
-        out.append(hit_positions)
+    # set the output list
+    out = [cloud(np.array(samples))]
+    # check if the ray origins are requested
     if return_ray_origin:
-        out.append(ray_orig)
+        out.append(cloud(np.array(ray_orig)))
 
     return tuple(out)
 
 
-def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
+def intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
     face_hit_pos = []
     face_verticies_xyz = geo_mesh.face_coordinates(face)
 
@@ -537,7 +534,7 @@ def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
         orig_pos = ray_orig[ray]
         # calc the destination of ray (max distance that it needs to travel)
         # this line has a problem given the negative indicies are included now
-        dest_pos = orig_pos + ray_dir[ray] * mesh_bb_size
+        dest_pos = orig_pos + direction * mesh_bb_size
 
         # intersction
         # compas version
@@ -606,7 +603,11 @@ def surface_normal_newell_vectorized(poly):
     poly_11 = np.roll(poly, [-1, -1], np.arange(2))
 
     n = np.roll(np.sum((poly - poly_10) * (poly_01 + poly_11), axis=0), -1, 0)
-
+    """
+    tri = np.array([[-0.00601774128, 0.130592465, 0.0237104725],
+                    [-0.0866273791, 0.153729707, 0.0216472838],
+                    [-0.0290798154, 0.125226036, 0.00471670832]])
+                    """
     norm = np.linalg.norm(n)
     if norm == 0:
         raise ValueError('zero norm')
@@ -635,3 +636,39 @@ def surface_normal_newell(poly):
         normalised = n/norm
 
     return normalised
+
+
+####################################################
+# OUTPUTS
+####################################################
+'''
+# Save the volumetric data model
+vol_filepath = 'Examples/SampleData/bunny_volume.csv'
+vol_metadata = pd.Series(
+    [
+        (f'voxel_size-{vs}-{vs}-{vs}'),
+        (f'volume_shape-{volume.shape[0]}-{volume.shape[1]}-{volume.shape[2]}'),
+        ('name-bunny')
+    ])
+
+vp.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
+
+# Save the point data model
+pnt_filepath = 'Examples/SampleData/bunny_voxels.csv'
+pnt_metadata = pd.Series(
+    [
+        (f'voxel_size:{vs}-{vs}-{vs}'),
+        ('name: bunny')
+    ])
+
+vp.pnts_to_csv(centroids, pnt_filepath, metadata=pnt_metadata)
+
+# Save the hitpoints to point data model
+pnt_filepath = 'Examples/SampleData/bunny_hitpoints.csv'
+pnt_metadata = pd.Series(
+    [
+        ('name: bunny hit points')
+    ])
+
+vp.pnts_to_csv(samples, pnt_filepath, metadata=pnt_metadata)
+'''
