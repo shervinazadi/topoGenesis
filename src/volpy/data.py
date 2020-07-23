@@ -402,7 +402,7 @@ def find_neighbours(lattice, stencil):
 
 
 def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
-    """[summary]
+    """This algorithm samples a mesh based on unit size
 
     Args:
         geo_mesh ([COMPAS Mesh]): [description]
@@ -549,18 +549,40 @@ def intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_d
 
 
 def TriangleLineIntersect(L, Vx, tol=1e-06):
-    # Algorithm from http://geomalgorithms.com/a06-_intersect-2.html
-    # C# implementation from https://github.com/Pirouz-Nourian/Topological_Voxelizer_CSharp/blob/master/Voxelizer_Functions.cs
+    """
+    Computing the intersection of a line with a triangle
+    Algorithm from http://geomalgorithms.com/a06-_intersect-2.html
+    C# implementation from https://github.com/Pirouz-Nourian/Topological_Voxelizer_CSharp/blob/master/Voxelizer_Functions.cs
+
+    Args:
+        L ([2d np array]): List of two points specified by their coordinates
+        Vx ([2d np array]): List of three points specified by their coordinates
+        tol ([float], optional): tolerance. Defaults to 1e-06.
+
+    Raises:
+        ValueError: If the triangle contains more than three vertices
+
+    Returns:
+        [np array]: [description]
+    """
+
+    ####################################################
+    # INPUTS
+    ####################################################
 
     if len(Vx) != 3:
         raise ValueError('A triangle needs to have three vertexes')
+    
+    ####################################################
+    # PROCEDURE
+    ####################################################
 
     # finding U & V vectors
     O = Vx[0]
     U = Vx[1] - Vx[0]
     V = Vx[2] - Vx[0]
     # finding normal vector
-    N = np.cross(U, V)
+    N = surface_normal_newell_vectorized(Vx) # np.cross(U, V)
 
     Nomin = np.dot((O - L[0]), N)
     Denom = np.dot(N, (L[1] - L[0]))
@@ -568,10 +590,8 @@ def TriangleLineIntersect(L, Vx, tol=1e-06):
     if Denom != 0:
         alpha = Nomin / Denom
 
-        # parameter along the line where it intersects the plane in question, only if not paralell to the plane
-        P = L[0] + np.dot(alpha, (L[1] - L[0]))
-
-        W = P - O
+        # L[0] + np.dot(alpha, (L[1] - L[0])): parameter along the line where it intersects the plane in question, only if not paralell to the plane
+        W = L[0] + np.dot(alpha, (L[1] - L[0])) - O
 
         UU = np.dot(U, U)
         VV = np.dot(V, V)
@@ -584,9 +604,12 @@ def TriangleLineIntersect(L, Vx, tol=1e-06):
         s = (UV * WV - VV * WU) / STDenom
         t = (UV * WU - UU * WV) / STDenom
 
-        Point = O + s * U + t * V
+    ####################################################
+    # OUTPUTS
+    ####################################################
 
         if s + tol >= 0 and t + tol >= 0 and s + t <= 1 + 2*tol:
+            Point = O + s * U + t * V
             return Point
         else:
             return None
@@ -595,32 +618,23 @@ def TriangleLineIntersect(L, Vx, tol=1e-06):
 
 
 def surface_normal_newell_vectorized(poly):
-    # https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
-    # Newell Method explained here: https://www.researchgate.net/publication/324921216_Topology_On_Topology_and_Topological_Data_Models_in_Geometric_Modeling_of_Space
+    """    
+    https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
+    Newell Method explained here: https://www.researchgate.net/publication/324921216_Topology_On_Topology_and_Topological_Data_Models_in_Geometric_Modeling_of_Space
 
-    poly_10 = np.roll(poly, [-1, 0], np.arange(2))
-    poly_01 = np.roll(poly, [0, -1], np.arange(2))
-    poly_11 = np.roll(poly, [-1, -1], np.arange(2))
+    Args:
+        poly ([2d np array]): List of vertices specified by their coordinates 
 
-    n = np.roll(np.sum((poly - poly_10) * (poly_01 + poly_11), axis=0), -1, 0)
+    Raises:
+        ValueError: [description]
+
+    Returns:
+        [type]: [description]
     """
-    tri = np.array([[-0.00601774128, 0.130592465, 0.0237104725],
-                    [-0.0866273791, 0.153729707, 0.0216472838],
-                    [-0.0290798154, 0.125226036, 0.00471670832]])
-                    """
-    norm = np.linalg.norm(n)
-    if norm == 0:
-        raise ValueError('zero norm')
-    else:
-        normalised = n/norm
 
-    return normalised
+    # This section is the vectorized equivalent of this code
 
-
-def surface_normal_newell(poly):
-    # https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
-    # Newell Method explained here: https://www.researchgate.net/publication/324921216_Topology_On_Topology_and_Topological_Data_Models_in_Geometric_Modeling_of_Space
-
+    """
     n = np.array([0.0, 0.0, 0.0])
 
     for i in range(3):
@@ -628,7 +642,14 @@ def surface_normal_newell(poly):
         n[0] += (poly[i][1] - poly[j][1]) * (poly[i][2] + poly[j][2])
         n[1] += (poly[i][2] - poly[j][2]) * (poly[i][0] + poly[j][0])
         n[2] += (poly[i][0] - poly[j][0]) * (poly[i][1] + poly[j][1])
+    """
 
+    poly_10 = np.roll(poly, [-1, 0], np.arange(2))
+    poly_01 = np.roll(poly, [0, -1], np.arange(2))
+    poly_11 = np.roll(poly, [-1, -1], np.arange(2))
+
+    n = np.roll(np.sum((poly - poly_10) * (poly_01 + poly_11), axis=0), -1, 0)
+   
     norm = np.linalg.norm(n)
     if norm == 0:
         raise ValueError('zero norm')
@@ -636,39 +657,3 @@ def surface_normal_newell(poly):
         normalised = n/norm
 
     return normalised
-
-
-####################################################
-# OUTPUTS
-####################################################
-'''
-# Save the volumetric data model
-vol_filepath = 'Examples/SampleData/bunny_volume.csv'
-vol_metadata = pd.Series(
-    [
-        (f'voxel_size-{vs}-{vs}-{vs}'),
-        (f'volume_shape-{volume.shape[0]}-{volume.shape[1]}-{volume.shape[2]}'),
-        ('name-bunny')
-    ])
-
-vp.vol_to_csv(volume, vol_filepath, metadata=vol_metadata)
-
-# Save the point data model
-pnt_filepath = 'Examples/SampleData/bunny_voxels.csv'
-pnt_metadata = pd.Series(
-    [
-        (f'voxel_size:{vs}-{vs}-{vs}'),
-        ('name: bunny')
-    ])
-
-vp.pnts_to_csv(centroids, pnt_filepath, metadata=pnt_metadata)
-
-# Save the hitpoints to point data model
-pnt_filepath = 'Examples/SampleData/bunny_hitpoints.csv'
-pnt_metadata = pd.Series(
-    [
-        ('name: bunny hit points')
-    ])
-
-vp.pnts_to_csv(samples, pnt_filepath, metadata=pnt_metadata)
-'''
