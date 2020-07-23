@@ -551,7 +551,7 @@ def tri_intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
     return(face_hit_pos)
 
 
-def TriangleLineIntersect(L, Vx, tol):
+def TriangleLineIntersect(L, Vx, tol=1e-06):
     # Algorithm from http://geomalgorithms.com/a06-_intersect-2.html
     # C# implementation from https://github.com/Pirouz-Nourian/Topological_Voxelizer_CSharp/blob/master/Voxelizer_Functions.cs
 
@@ -565,18 +565,14 @@ def TriangleLineIntersect(L, Vx, tol):
     # finding normal vector
     N = np.cross(U, V)
 
-    # finding the line start and end
-    PS = L[0]
-    PE = L[1]
-
-    Nomin = np.dot((O - PS), N)
-    Denom = np.dot(N, (PE - PS))
+    Nomin = np.dot((O - L[0]), N)
+    Denom = np.dot(N, (L[1] - L[0]))
 
     if Denom != 0:
         alpha = Nomin / Denom
 
         # parameter along the line where it intersects the plane in question, only if not paralell to the plane
-        P = PS + np.dot(alpha, (PE - PS))
+        P = L[0] + np.dot(alpha, (L[1] - L[0]))
 
         W = P - O
 

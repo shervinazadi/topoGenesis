@@ -18,7 +18,7 @@ def test_newell_surface_normal():
 
     # Verify
     np.testing.assert_allclose(
-        computed_norm, expected_norm, rtol=1e-7, atol=0)
+        computed_norm, expected_norm, rtol=1e-6, atol=0)
 
     # Cleanup
 
@@ -39,6 +39,30 @@ def test_newell_surface_normal_vectorized():
 
     # Verify
     np.testing.assert_allclose(
-        computed_norm, expected_norm, rtol=1e-7, atol=0)
+        computed_norm, expected_norm, rtol=1e-6, atol=0)
+
+    # Cleanup
+
+
+def test_TriangleLineIntersect():
+    """
+    Testing the Triangle Line Intersect with hardcoded data
+    """
+
+    # Setup
+    tri = np.array([[-0.00601774128, 0.130592465, 0.0237104725],
+                    [-0.0866273791, 0.153729707, 0.0216472838],
+                    [-0.0290798154, 0.125226036, 0.00471670832]])
+    line = np.array([[-0.28719836, -0.67555254, 0.54557851],
+                     [0.20604841, 0.94858468, -0.51219553]])
+
+    expected_point = np.array([-0.04057498,  0.13651607,  0.01669149])
+
+    # Exercise
+    computed_point = vp.TriangleLineIntersect(line, tri)
+
+    # Verify
+    np.testing.assert_allclose(
+        computed_point, expected_point, rtol=1e-6, atol=0)
 
     # Cleanup
