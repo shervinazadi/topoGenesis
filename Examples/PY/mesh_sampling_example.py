@@ -25,14 +25,14 @@ __status__ = "Dev"
 # INPUTS
 ####################################################
 
-vs = 0.002
+vs = 0.01
 voxel_size = np.array([vs, vs, vs])
 tol = 1e-09
 # dirpath=os.path.curdir
 # geo_path = os.path.join(dirpath,os.path.commonpath('Examples/SampleData/bunny_lowpoly.obj'))
 # print('test'+'C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\src\\Examples\\SampleData\\bunny_lowpoly.obj')
-geo_path='C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\Examples\\SampleData\\bunny_lowpoly.obj'#os.path.abspath(r'Examples\SampleData\bunny_lowpoly.obj')#r'Examples/SampleData/bunny_lowpoly.obj'
-#geo_path = 'Examples/SampleData/bunny_lowpoly.obj'
+# geo_path='C:\\Users\\pnourian\\Documents\\GitHub\\VolPy\\Examples\\SampleData\\bunny_lowpoly.obj'#os.path.abspath(r'Examples\SampleData\bunny_lowpoly.obj')#r'Examples/SampleData/bunny_lowpoly.obj'
+geo_path = os.path.relpath('Examples/SampleData/bunny_lowpoly.obj')
 geo_mesh = ds.Mesh.from_obj(geo_path)
 
 ####################################################
@@ -130,19 +130,17 @@ p.add_mesh(outline, color="grey", label="Sampling Domain")
 # p.add_mesh(mesh, show_edges=True, color='#abd8ff', opacity=0.4, label="Base Mesh")
 
 # adding the ray origins: dark blue
-p.add_mesh(pv.PolyData(ray_origins), color='#004887', point_size=4,
-           render_points_as_spheres=True, label="Ray Origins")
+# p.add_mesh(pv.PolyData(ray_origins), color='#004887', point_size=4, render_points_as_spheres=True, label="Ray Origins")
 
 # adding the hit points: blue
 p.add_mesh(pv.PolyData(samples), color='#2499ff', point_size=8,
            render_points_as_spheres=True, label="Intersection Points")
 
 # adding the voxel centeroids: red
-# p.add_mesh(pv.PolyData(centroids), color='#ff244c', point_size=15, render_points_as_spheres=True, label="Voxel Centroids")
+p.add_mesh(pv.PolyData(centroids), color='#ff244c', point_size=12, render_points_as_spheres=True, label="Voxel Centroids")
 
 # adding the voxels: light red
-p.add_mesh(threshed, show_edges=True,
-           color="#ff8fa3", opacity=1, label="Voxels")
+p.add_mesh(threshed, show_edges=True,color="#ff8fa3", opacity=.15, label="Voxels")
 
 # adding the legend
 p.add_legend(bcolor=[0.9, 0.9, .9], border=True, size=[0.1, 0.1])
