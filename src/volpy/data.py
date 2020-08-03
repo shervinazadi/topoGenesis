@@ -137,8 +137,7 @@ class lattice(np.ndarray):
         threshed = grid.threshold([0.9, 1.1])
 
         # adding the voxels: light red
-        plot.add_mesh(threshed, show_edges=True, color="#ff8fa3",
-                      opacity=0.3, label="Cells")
+        plot.add_mesh(threshed, show_edges=True, color="#ff8fa3", opacity=0.3, label="Cells")
 
         if show_outline:
             # adding the boundingbox wireframe
@@ -146,8 +145,37 @@ class lattice(np.ndarray):
 
         if show_centroids:
             # adding the voxel centeroids: red
-            plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5,
-                          render_points_as_spheres=True, label="Cell Centroidss")
+            plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5, render_points_as_spheres=True, label="Cell Centroidss")
+
+        return plot
+
+    def fast_notebook_vis(self, plot, show_outline=True, show_centroids=True):
+
+        # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
+        grid = pv.UniformGrid()
+        grid.dimensions = np.array(self.shape) + 1
+        # The bottom left corner of the data set
+        grid.origin = self.minbound - self.unit * 0.5
+        grid.spacing = self.unit  # These are the cell sizes along each axis
+        # Add the data values to the cell data
+        grid.cell_arrays["values"] = self.flatten(
+            order="F").astype(float)  # Flatten the array!
+        # filtering the voxels
+        threshed = grid.threshold([0.9, 1.1])
+
+        # adding the voxels: light red
+        plot.add_mesh(threshed, color="#ff8fa3", opacity=0.3)
+        # plot.add_mesh(threshed, show_edges=True, color="#ff8fa3", opacity=0.3, label="Cells")
+
+        if show_outline:
+            # adding the boundingbox wireframe
+            plot.add_mesh(grid.outline(), color="grey")
+            # plot.add_mesh(grid.outline(), color="grey", label="Domain")
+
+        if show_centroids:
+            # adding the voxel centeroids: red
+            plot.add_points(pv.PolyData(self.centroids), color='#ff244c')
+            # plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5, render_points_as_spheres=True, label="Cell Centroidss")
 
         return plot
 
@@ -282,8 +310,14 @@ class cloud(np.ndarray):
     def fast_vis(self, plot):
 
         # adding the original point cloud: blue
-        plot.add_mesh(pv.PolyData(self), color='#2499ff',
-                      point_size=3, render_points_as_spheres=True, label="Point Cloud")
+        plot.add_mesh(pv.PolyData(self), color='#2499ff', point_size=3, render_points_as_spheres=True, label="Point Cloud")
+
+        return plot
+
+    def fast_notebook_vis(self, plot):
+
+        # adding the original point cloud: blue
+        plot.add_points(pv.PolyData(self), color='#2499ff')
 
         return plot
 
