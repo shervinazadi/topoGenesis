@@ -448,7 +448,7 @@ def find_neighbours(lattice, stencil):
     return cell_neighbors
 
 
-def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
+def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     """This algorithm samples a mesh based on unit size
 
     Args:
@@ -475,11 +475,11 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     ####################################################
     # Initialize the volumetric array
     ####################################################
+    mesh_vertices, mesh_faces = mesh
 
     # retrieve the bounding box information
-    mesh_bb = np.array(geo_mesh.bounding_box())
-    mesh_bb_min = np.amin(mesh_bb, axis=0)
-    mesh_bb_max = np.amax(mesh_bb, axis=0)
+    mesh_bb_min = np.amin(mesh_vertices, axis=0)
+    mesh_bb_max = np.amax(mesh_vertices, axis=0)
     mesh_bb_size = mesh_bb_max - mesh_bb_min
 
     # find the minimum index in discrete space
@@ -529,16 +529,23 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
         # open the context manager
         with concurrent.futures.ProcessPoolExecutor() as executor:
             # submit the processes
-            results = [executor.submit(
-                intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in geo_mesh.faces()]
+            # results = [executor.submit(intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in geo_mesh.faces()]
+            results = [executor.submit(intersect, mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in mesh_faces]
             # fetch the results
             for f in concurrent.futures.as_completed(results):
                 samples.extend(f.result())
     else:
         # iterate over the faces
-        for face in geo_mesh.faces():
-            face_hit_pos = intersect(geo_mesh, face, unit, mesh_bb_size,
-                                         ray_orig, proj_ray_orig, ray_dir, tol)
+        # for face in geo_mesh.faces():
+        for face in mesh_faces:
+            # print(face)
+            # print(type(face))
+            # id = np.array(face)
+            # print(mesh_vertices[id])
+            # print(mesh_vertices[np.array(face).astype(int)])
+            # print(mesh_vertices[np.array(face)])
+
+            face_hit_pos = intersect(mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol)
             samples.extend(face_hit_pos)
 
     ####################################################
@@ -554,14 +561,12 @@ def mesh_sampling(geo_mesh, unit, tol=1e-06, **kwargs):
     return tuple(out)
 
 
-def intersect(geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
+def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
     face_hit_pos = []
-    face_verticies_xyz = geo_mesh.face_coordinates(face)
 
-    if len(face_verticies_xyz) != 3:
+    # check if the face is a triangle
+    if face_verticies_xyz.shape[0] != 3:
         return([])
-
-    face_verticies_xyz = np.array(face_verticies_xyz)
 
     # check if any coordinate of the projected ray origin is in betwen the max and min of the coordinates of the face
     min_con = proj_ray_orig >= np.amin(
@@ -704,3 +709,18 @@ def surface_normal_newell_vectorized(poly):
         normalised = n/norm
 
     return normalised
+
+def load_mesh(mesh_path):
+    # load the mesh using pyvista
+    pv_mesh = pv.read(mesh_path)
+
+    # check if all of the faces are triangles
+    if not pv_mesh.is_all_triangles():
+        raise ValueError('All faces need to be triangles!')
+    
+    # extract faces and vertices
+    v = np.array(pv_mesh.points)
+    f = pv_mesh.faces.reshape(-1,4)[:,1:]
+
+    # return them as 3d numpy arrays
+    return np.array(v).astype(np.float64), np.array(f).astype(np.int64)
