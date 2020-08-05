@@ -322,14 +322,89 @@ class cloud(np.ndarray):
         return plot
 
 
-def expand_stencil(stencil):
-    locations = np.argwhere(stencil) - (stencil.shape[0] - 1) / 2
-    # calculating the distance of each neighbour
-    sums = np.abs(locations).sum(axis=1)
-    # sorting to identify the main cell
-    order = np.argsort(sums)
-    # sort and return
-    return locations[order].astype(int)
+class stencil(np.ndarray):
+
+    def __new__(subtype, point_array, ntype="Custom", origin=np.array([0,0,0]), dtype=int, buffer=None, offset=0,
+                strides=None, order=None):
+
+        # extracting the shape from point_array
+        shape = point_array.shape
+        # using the point_array as the buffer
+        buffer = point_array.flatten(order="C")
+
+        # Create the ndarray instance of our type, given the usual
+        # ndarray input arguments.  This will call the standard
+        # ndarray constructor, but return an object of our type.
+        # It also triggers a call to stencil.__array_finalize__
+        obj = super(stencil, subtype).__new__(subtype, shape, dtype,
+                                            buffer, offset, strides,
+                                            order)
+
+        # set the neighbourhood type
+        obj.ntype = ntype
+        # set the origin
+        obj.origin = origin
+
+        # Finally, we must return the newly created object:
+        return obj
+
+    def __array_finalize__(self, obj):
+        # ``self`` is a new object resulting from
+        # ndarray.__new__(stencil, ...), therefore it only has
+        # attributes that the ndarray.__new__ constructor gave it -
+        # i.e. those of a standard ndarray.
+        #
+        # We could have got to the ndarray.__new__ call in 3 ways:
+        # From an explicit constructor - e.g. stencil():
+        #    obj is None
+        #    (we're in the middle of the stencil.__new__
+        #    constructor, and self.bounds will be set when we return to
+        #    stencil.__new__)
+        if obj is None:
+            return
+        # From view casting - e.g arr.view(stencil):
+        #    obj is arr
+        #    (type(obj) can be stencil)
+        # From new-from-template - e.g stencil[:3]
+        #    type(obj) is stencil
+        #
+        # Note that it is here, rather than in the __new__ method,
+        # that we set the default value for 'properties', because this
+        # method sees all creation of default objects - with the
+        # stencil.__new__ constructor, but also with
+        # arr.view(stencil).
+        self.ntype = getattr(obj, 'ntype', None)
+        self.origin = getattr(obj, 'origin', None)
+
+
+        # We do not need to return anything
+    def __array_wrap__(self, array, context=None):
+        
+        # checking if the array has any value other than 0, and 1
+        temp = np.array(array)
+        # print(self)
+        # print(temp)
+        #array[np.where(array > 0.5)] = 1
+        np.place(temp, temp > 0.5, [1])
+        np.place(temp, temp < 0.5, [0])
+        #array[np.where(array < 0)] = 0
+        # print(temp)
+        return stencil(temp, ntype="custom", origin=self.origin)
+
+    def expand(self):
+        locations = np.argwhere(self) - self.origin # (self.shape[0] - 1) / 2
+        # calculating the distance of each neighbour
+        sums = np.abs(locations).sum(axis=1)
+        # sorting to identify the main cell
+        order = np.argsort(sums)
+        # sort and return
+        return locations[order].astype(int)
+    
+    def set_index(self, index, value):
+        ind = np.array(index) + self.origin
+        if ind.size != 3:
+            raise ValueError(" the index needs to have three components")
+        self[ind[0],ind[1],ind[2]] = value
 
 
 def create_stencil(type_str, steps, clip=None):
@@ -339,27 +414,55 @@ def create_stencil(type_str, steps, clip=None):
     # von neumann neighborhood
     if type_str == "von_neumann":
         # https://en.wikipedia.org/wiki/Von_Neumann_neighborhood
+
         # claculating all the possible shifts to apply to the array
         shifts = np.array(list(itertools.product(
             list(range(-clip, clip+1)), repeat=3)))
 
         # the number of steps that the neighbour is appart from the cell (setp=1 : 6 neighbour, step=2 : 18 neighbours, step=3 : 26 neighbours)
         shift_steps = np.sum(np.absolute(shifts), axis=1)
+
         # check the number of steps
         chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
+        
         # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
         locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
-        stencil = np.zeros((clip*2+1, clip*2+1, clip*2+1)).astype(int)
-        stencil[locs[0], locs[1], locs[2]] = 1
+        # inilize the stencil
+        s = np.zeros((clip*2+1, clip*2+1, clip*2+1)).astype(int)
+
+        # fill in the stencil
+        s[locs[0], locs[1], locs[2]] = 1
+
+        return stencil(s, ntype=type_str, origin=np.array([clip, clip, clip]))
+
     elif type_str == "moore":
         # https://en.wikipedia.org/wiki/Moore_neighborhood
-        raise NotImplementedError
+        
+        # claculating all the possible shifts to apply to the array
+        shifts = np.array(list(itertools.product(
+            list(range(-clip, clip+1)), repeat=3)))
+
+        # the number of steps that the neighbour is appart from the origin cell
+        shift_steps = np.max(np.absolute(shifts), axis=1)
+
+        # check the number of steps
+        chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
+        
+        # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
+        locs = np.transpose(shifts[chosen_shift_ind]) + clip
+
+        # inilize the stencil
+        s = np.zeros((clip*2+1, clip*2+1, clip*2+1)).astype(int)
+
+        # fill in the stencil
+        s[locs[0], locs[1], locs[2]] = 1
+
+        return stencil(s, ntype=type_str, origin=np.array([clip, clip, clip]))
+
     else:
         raise ValueError(
             'non-valid neighborhood type for stencil creation')
-    return stencil
-
 
 def scatter(bounds, count):
     """[summary]
