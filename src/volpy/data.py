@@ -344,6 +344,9 @@ class stencil(np.ndarray):
         obj.ntype = ntype
         # set the origin
         obj.origin = origin
+        # set the  'bounds' attribute
+        shape_arr = np.array(shape)
+        obj.bounds = np.array([shape_arr * 0, shape_arr - 1]) - origin
 
         # Finally, we must return the newly created object:
         return obj
@@ -373,6 +376,7 @@ class stencil(np.ndarray):
         # method sees all creation of default objects - with the
         # stencil.__new__ constructor, but also with
         # arr.view(stencil).
+        self.bounds = getattr(obj, 'bounds', None)
         self.ntype = getattr(obj, 'ntype', None)
         self.origin = getattr(obj, 'origin', None)
 
@@ -380,16 +384,21 @@ class stencil(np.ndarray):
         # We do not need to return anything
     def __array_wrap__(self, array, context=None):
         
-        # checking if the array has any value other than 0, and 1
         temp = np.array(array)
-        # print(self)
-        # print(temp)
-        #array[np.where(array > 0.5)] = 1
+
+        # checking if the array has any value other than 0, and 1
         np.place(temp, temp > 0.5, [1])
         np.place(temp, temp < 0.5, [0])
-        #array[np.where(array < 0)] = 0
-        # print(temp)
+
         return stencil(temp, ntype="custom", origin=self.origin)
+
+    @property
+    def minbound(self):
+        return self.bounds[0]
+
+    @property
+    def maxbound(self):
+        return self.bounds[1]
 
     def expand(self):
         locations = np.argwhere(self) - self.origin # (self.shape[0] - 1) / 2
