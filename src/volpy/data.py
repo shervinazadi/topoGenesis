@@ -179,14 +179,40 @@ class lattice(np.ndarray):
 
         return plot
 
-    def boolean_marching_cubes(self, style_str):
+    def boolean_marching_cubes(self):
 
         # construct the boolean_marching_cubes stencil
         mc_stencil = create_stencil("boolean_marching_cube", 1)
 
-        # find the cube id
+        # getting shifts by expanding the stencil in the Fortran Order
+        shifts = mc_stencil.expand('F')
+        
+        # pad the volume with zero in every direction
+        volume = np.pad(self, (1, 1), mode='constant', constant_values=(0, 0))
 
-        raise NotImplementedError
+        # the id of voxels (0,1,2, ... n)
+        volume_inds = np.arange(volume.size).reshape(volume.shape)
+
+        # gattering all the replacements in the collumns
+        replaced_columns = [np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
+
+        # stacking the columns
+        cell_corners = np.stack(replaced_columns, axis=-1)
+
+        # replace neighbours by their value in volume
+        volume_flat = volume.ravel()
+        neighbor_values = volume_flat[cell_corners]
+
+        # computing the cell tile id
+        # the powers of 2 in an array
+        legend = 2**np.arange(8)
+        # multiply the corner with the power of two, sum them, and reshape to the original volume shape
+        tile_id = np.sum(legend*neighbor_values, axis=1).reshape(volume.shape)
+
+        # drop the last column, row and page (since cube-grid is 1 less than the voxel grid in every dimension)
+        cube_grid = tile_id[:-1, :-1, :-1]
+
+        return cube_grid
 
     def find_connectivity(self, stencil):
         raise NotImplementedError
@@ -409,12 +435,21 @@ class stencil(np.ndarray):
     def maxbound(self):
         return self.bounds[1]
 
-    def expand(self):
-        locations = self.origin - np.argwhere(self)# (self.shape[0] - 1) / 2
-        # calculating the distance of each neighbour
-        sums = np.abs(locations).sum(axis=1)
-        # sorting to identify the main cell
-        order = np.argsort(sums)
+    def expand(self, sort="dist"):
+        # list the locations
+        locations = self.origin - np.argwhere(self)
+
+        # check the sorting method
+        
+        if sort=="dist": # Sorted Based on the distance from origin
+            # calculating the distance of each neighbour
+            sums = np.abs(locations).sum(axis=1)
+            # sorting to identify the main cell
+            order = np.argsort(sums)
+
+        elif sort=="F": # Fortran Sort, used for Boolean Marching Cubes
+            order = np.arange(self.size).reshape(self.shape).flatten('F')
+
         # sort and return
         return locations[order].astype(int)
     
@@ -600,6 +635,38 @@ def find_neighbours(lattice, stencil):
     return cell_neighbors
 
 
+def marching_cube_vis(p, cube_grid, lattice, style_str):
+
+    # extract cube indicies
+    cube_ind = np.transpose(np.indices(cube_grid.shape),
+                            (1, 2, 3, 0)).reshape(-1, 3)
+    # extract cube positions
+    cube_pos = (cube_ind - 0.5) * lattice.unit + lattice.minbound
+
+    # extract cube tid
+    cube_tid = cube_grid.ravel()
+
+    # remove the cube position and tid where tid is 0
+    filled_cube_pos = cube_pos[cube_tid > 0]
+    filled_cube_tid = cube_tid[cube_tid > 0]
+
+    # load tiles
+    tiles = [0]
+    for i in range(1,256):
+        tile_path = "src/volpy/resources/mc_tiles/champfer/Tile_{0:03d}.obj".format(i)
+        tile = pv.read(tile_path)
+        tile.points *= lattice.unit
+        tiles.append(tile)
+
+    # place tiles
+    for i in range(filled_cube_tid.size):
+        tile = tiles[filled_cube_tid[i]].copy()
+        tile.points += filled_cube_pos[i]
+        p.add_mesh(tile, color='#abd8ff', render_points_as_spheres=True)
+    
+    return p
+
+
 def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     """This algorithm samples a mesh based on unit size
 
@@ -710,7 +777,8 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     if return_ray_origin:
         out.append(cloud(np.array(ray_orig)))
 
-    return tuple(out)
+    # if the list has more than one item, return it as a tuple, if it has only one item, return the item itself
+    return tuple(out) if len(out) > 1 else out[0]
 
 
 def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
@@ -861,6 +929,7 @@ def surface_normal_newell_vectorized(poly):
         normalised = n/norm
 
     return normalised
+
 
 def load_mesh(mesh_path):
     # load the mesh using pyvista
