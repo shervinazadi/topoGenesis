@@ -3,7 +3,7 @@ import numpy as np
 import pyvista as pv
 import volpy as vp
 
-vs = 0.01
+vs = 0.03
 unit = np.array([vs, vs, vs])
 tol = 1e-09
 mesh_path = os.path.relpath('Examples/SampleData/bunny_lowpoly.obj')
