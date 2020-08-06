@@ -3,7 +3,7 @@ import numpy as np
 import pyvista as pv
 import volpy as vp
 
-vs = 0.03
+vs = 0.01
 unit = np.array([vs, vs, vs])
 tol = 1e-09
 mesh_path = os.path.relpath('Examples/SampleData/bunny_lowpoly.obj')
@@ -13,7 +13,7 @@ sample_cloud = vp.mesh_sampling(mesh, unit, tol=tol)
 
 lattice = sample_cloud.regularize(unit, closed=True)
 
-cube_grid = lattice.boolean_marching_cubes()
+cube_lattice = lattice.boolean_marching_cubes()
 
 # initiating the plotter
 p = pv.Plotter()
@@ -22,7 +22,7 @@ p.set_background([0.065, 0.065, 0.065]) # dark grey background
 # p.set_background([1.0, 1.0, 1.0])  # white background
 
 # visualize tiles
-p = vp.marching_cube_vis(p, cube_grid, lattice, "chamfer")
+p = vp.marching_cube_vis(p, cube_lattice, "chamfer")
 
 # # fast visualization of the lattice
 lattice.fast_vis(p)

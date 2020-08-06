@@ -202,8 +202,12 @@ class lattice(np.ndarray):
         # stacking the columns
         cell_corners = np.stack(replaced_columns, axis=-1)
 
-        # replace neighbours by their value in volume
+        # converting volume value (TODO: this needs to become a method of its own)
         volume_flat = volume.ravel()
+        volume_flat[volume_flat>0.5] = 1
+        volume_flat[volume_flat<0.5] = 0
+
+        # replace neighbours by their value in volume
         neighbor_values = volume_flat[cell_corners]
 
         # computing the cell tile id
@@ -215,7 +219,13 @@ class lattice(np.ndarray):
         # drop the last column, row and page (since cube-grid is 1 less than the voxel grid in every dimension)
         cube_grid = tile_id[:-1, :-1, :-1]
 
-        return cube_grid
+        # initializing the lattice
+        cube_lattice = lattice([self.minbound, self.maxbound + self.unit], unit=self.unit, dtype=np.uint8, buffer=cube_grid, default_value=False)
+        
+        # set the values that are bigger than 0 (transfering values)
+        cube_lattice[cube_grid>0] = cube_grid[cube_grid>0] 
+
+        return cube_lattice
 
     def find_connectivity(self, stencil):
         raise NotImplementedError
@@ -551,6 +561,7 @@ def create_stencil(type_str, steps, clip=None):
         raise ValueError(
             'non-valid neighborhood type for stencil creation')
 
+
 def scatter(bounds, count):
     """[summary]
 
@@ -638,16 +649,16 @@ def find_neighbours(lattice, stencil):
     return cell_neighbors
 
 
-def marching_cube_vis(p, cube_grid, lattice, style_str):
+def marching_cube_vis(p, cube_lattice, style_str):
 
     # extract cube indicies
-    cube_ind = np.transpose(np.indices(cube_grid.shape),
+    cube_ind = np.transpose(np.indices(cube_lattice.shape),
                             (1, 2, 3, 0)).reshape(-1, 3)
     # extract cube positions
-    cube_pos = (cube_ind - 0.5) * lattice.unit + lattice.minbound
+    cube_pos = (cube_ind - 0.5) * cube_lattice.unit + cube_lattice.minbound
 
     # extract cube tid
-    cube_tid = cube_grid.ravel()
+    cube_tid = cube_lattice.ravel()
 
     # remove the cube position and tid where tid is 0
     filled_cube_pos = cube_pos[cube_tid > 0]
@@ -661,7 +672,7 @@ def marching_cube_vis(p, cube_grid, lattice, style_str):
     for i in range(1,256):
         tile_path = os.path.join(file_directory ,"resources/mc_tiles", style_str, "Tile_{0:03d}.obj".format(i))
         tile = pv.read(tile_path)
-        tile.points *= lattice.unit
+        tile.points *= cube_lattice.unit
         tiles.append(tile)
 
     new_points = tiles[filled_cube_tid[0]].points + filled_cube_pos[0]
