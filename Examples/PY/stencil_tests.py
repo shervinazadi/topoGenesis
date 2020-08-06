@@ -9,6 +9,8 @@ print(mc_stencil.origin)
 print(mc_stencil.minbound)
 print(mc_stencil.maxbound)
 
+print(mc_stencil.expand())
+
 # # create a moore neighbourhood stencil
 # moore_stencil = vp.create_stencil("moore", 1, 1)
 # moore_stencil.set_index([0,0,0], 0)

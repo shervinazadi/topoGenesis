@@ -179,7 +179,12 @@ class lattice(np.ndarray):
 
         return plot
 
-    def marching_cubes(self, type_str, style_str):
+    def boolean_marching_cubes(self, style_str):
+
+        # construct the boolean_marching_cubes stencil
+        mc_stencil = create_stencil("boolean_marching_cube", 1)
+
+        # find the cube id
 
         raise NotImplementedError
 
@@ -405,7 +410,7 @@ class stencil(np.ndarray):
         return self.bounds[1]
 
     def expand(self):
-        locations = np.argwhere(self) - self.origin # (self.shape[0] - 1) / 2
+        locations = self.origin - np.argwhere(self)# (self.shape[0] - 1) / 2
         # calculating the distance of each neighbour
         sums = np.abs(locations).sum(axis=1)
         # sorting to identify the main cell
