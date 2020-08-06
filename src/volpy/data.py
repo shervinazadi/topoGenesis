@@ -698,7 +698,7 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
 
     Args:
         geo_mesh ([COMPAS Mesh]): [description]
-        unit ([numpy array]): [description]
+        unit ([numpy array]): [Unit represents the unit size in the sampling grid. It needs to be one float value or an array-like with three elements. In case that a scalar is given it will used for all three dimensions]
         tol ([type], optional): [description]. Defaults to 1e-06.
 
     Returns:
@@ -708,6 +708,11 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     # INPUTS
     ####################################################
 
+    unit = np.array(unit)
+    if unit.size == 1:
+        unit = np.array([unit, unit, unit])
+    elif unit.size != 3:
+        raise ValueError("unit needs to have three elements representing the unit size for mesh sampling in three dimensions")
     dim_num = unit.size
     multi_core_process = kwargs.get('multi_core_process', False)
     return_ray_origin = kwargs.get('return_ray_origin', False)

@@ -1,20 +1,25 @@
-import os
-import numpy as np
-import pyvista as pv
-import volpy as vp
+import os               # for path manipulation
+import volpy as vp      # core
+import pyvista as pv    # for plotting and visualizations
 
-vs = 0.01
-unit = np.array([vs, vs, vs])
-tol = 1e-09
+### Step 0: Specifing all the inputs
+
+vs = 0.01               # voxel size 
+unit = [vs,vs,vs]       # unit size
+tol = 1e-09             # intersection tolerance
 mesh_path = os.path.relpath('Examples/SampleData/bunny_lowpoly.obj')
-mesh = vp.load_mesh(mesh_path)
+original_mesh = vp.load_mesh(mesh_path)
 
-sample_cloud = vp.mesh_sampling(mesh, unit, tol=tol)
+### Step 1: Sampling the mesh and constructing the point cloud
+sample_cloud = vp.mesh_sampling(original_mesh, unit, tol=tol)
 
+### Step 2: Voxelating the point cloud to construct the lattice
 lattice = sample_cloud.regularize(unit, closed=True)
 
+### Step 3: Costructing the Cube Lattice using the Boolea Marching Cube Algorithm
 cube_lattice = lattice.boolean_marching_cubes()
 
+### Step 4: Plotting
 # initiating the plotter
 p = pv.Plotter()
 
