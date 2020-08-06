@@ -653,10 +653,13 @@ def marching_cube_vis(p, cube_grid, lattice, style_str):
     filled_cube_pos = cube_pos[cube_tid > 0]
     filled_cube_tid = cube_tid[cube_tid > 0]
 
+    if style_str!="chamfer": 
+        raise ValueError("Meshing style is not valid. Valid styles are: ['chamfer']")
+
     # load tiles
     tiles = [0]
     for i in range(1,256):
-        tile_path = os.path.join(file_directory ,"resources/mc_tiles/champfer/Tile_{0:03d}.obj".format(i))
+        tile_path = os.path.join(file_directory ,"resources/mc_tiles", style_str, "Tile_{0:03d}.obj".format(i))
         tile = pv.read(tile_path)
         tile.points *= lattice.unit
         tiles.append(tile)
@@ -664,10 +667,7 @@ def marching_cube_vis(p, cube_grid, lattice, style_str):
     new_points = tiles[filled_cube_tid[0]].points + filled_cube_pos[0]
     new_faces = tiles[filled_cube_tid[0]].faces.reshape(-1, 4)
 
-    # print(new_points)
-    # print(new_faces)
-
-    # add tiles to plot
+    # merge tiles
     for i in range(1, filled_cube_tid.size):
         tile = tiles[filled_cube_tid[i]]
         # add the faces list, changing the point numbers
@@ -675,9 +675,7 @@ def marching_cube_vis(p, cube_grid, lattice, style_str):
         # add the new points, change the position based on the location
         new_points = np.concatenate((new_points, tile.points + filled_cube_pos[i]), axis=0)
 
-    # print(new_points)
-    # print(new_faces)
-
+    # construct the new mesh and add it to plot
     new_tile = pv.PolyData(new_points, new_faces)
     p.add_mesh(new_tile, color='#abd8ff')
     
