@@ -179,8 +179,12 @@ class lattice(np.ndarray):
 
         return plot
 
+    def marching_cubes(self, type_str, style_str):
+
+        raise NotImplementedError
+
     def find_connectivity(self, stencil):
-        pass
+        raise NotImplementedError
 
 
 class cloud(np.ndarray):
@@ -468,6 +472,37 @@ def create_stencil(type_str, steps, clip=None):
         s[locs[0], locs[1], locs[2]] = 1
 
         return stencil(s, ntype=type_str, origin=np.array([clip, clip, clip]))
+
+    elif type_str == "boolean_marching_cube":
+        
+        # # shifts to check 8 corner of cube (multiply by -1 since shift goes backward)
+        # shifts = np.array([
+        #     [0, 0, 0],  # 1
+        #     [1, 0, 0],  # 2
+        #     [0, 1, 0],  # 4
+        #     [1, 1, 0],  # 8
+        #     [0, 0, 1],  # 16
+        #     [1, 0, 1],  # 32
+        #     [0, 1, 1],  # 64
+        #     [1, 1, 1]   # 128
+        # ])*-1
+
+        # # the number of steps that the neighbour is appart from the origin cell
+        # shift_steps = np.max(np.absolute(shifts), axis=1)
+
+        # # check the number of steps
+        # chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
+        
+        # # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
+        # locs = np.transpose(shifts[chosen_shift_ind]) + clip
+
+        # inilize the stencil
+        s = np.ones((2,2,2)).astype(int)
+
+        # # fill in the stencil
+        # s[locs[0], locs[1], locs[2]] = 1
+
+        return stencil(s, ntype=type_str, origin=np.array([0,0,0]))
 
     else:
         raise ValueError(

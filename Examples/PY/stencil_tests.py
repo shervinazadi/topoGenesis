@@ -2,19 +2,24 @@ import volpy as vp
 
 print("runner")
 # create a stencil based on well-known neighbourhood definitions
-von_neumann_stencil = vp.create_stencil("von_neumann", 1, 1)
+mc_stencil = vp.create_stencil("boolean_marching_cube", 1)
+print(mc_stencil)
+print(mc_stencil.ntype)
+print(mc_stencil.origin)
+print(mc_stencil.minbound)
+print(mc_stencil.maxbound)
 
-# create a moore neighbourhood stencil
-moore_stencil = vp.create_stencil("moore", 1, 1)
-moore_stencil.set_index([0,0,0], 0)
-# print(moore_stencil.ntype)
+# # create a moore neighbourhood stencil
+# moore_stencil = vp.create_stencil("moore", 1, 1)
+# moore_stencil.set_index([0,0,0], 0)
+# # print(moore_stencil.ntype)
 
-custom_stencil = moore_stencil - von_neumann_stencil
+# custom_stencil = moore_stencil - von_neumann_stencil
 
-# print(type(custom_stencil))
-# print(custom_stencil)
-# print(custom_stencil.ntype)
-# print(custom_stencil.origin)
-print(custom_stencil.bounds)
-# print(custom_stencil.minbound)
-# print(custom_stencil.maxbound)
+# # print(type(custom_stencil))
+# # print(custom_stencil)
+# # print(custom_stencil.ntype)
+# # print(custom_stencil.origin)
+# print(custom_stencil.bounds)
+# # print(custom_stencil.minbound)
+# # print(custom_stencil.maxbound)
