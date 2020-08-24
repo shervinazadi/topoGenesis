@@ -1,6 +1,6 @@
-# VolPy
+# topoGenesis
 
-VolPy is a python package for scientific computing with volumetric data.
+topoGenesis is a python package that offers topological structures and methods for Generative Systems and Sciences.
 
 ## Module Installation
 
@@ -23,10 +23,10 @@ conda install compas
 conda install pandas
 ```
 
-4. go to the source directory of volpy and install it locally within your environment with symlink:
+4. go to the source directory of topogenesis and install it locally within your environment with symlink:
 
 ```Shell Script
-cd VolPy/src
+cd topoGenesis/src
 python -m pip install -e .
 ```
 

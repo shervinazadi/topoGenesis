@@ -1,6 +1,6 @@
 
 """
-Main Classes of volpy
+Main Data Structure of the topoGenesis
 """
 
 import numpy as np
