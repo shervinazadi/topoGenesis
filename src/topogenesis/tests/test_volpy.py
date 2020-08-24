@@ -1,4 +1,4 @@
-import volpy as vp
+import topogenesis as tg
 import numpy as np
 
 def test_newell_surface_normal_vectorized():
@@ -13,7 +13,7 @@ def test_newell_surface_normal_vectorized():
     expected_normal = np.array([-0.24662338, -0.81206861,  0.52888702])
 
     # Exercise
-    computed_normal = vp.surface_normal_newell_vectorized(tri)
+    computed_normal = tg.surface_normal_newell_vectorized(tri)
 
     # Verify
     np.testing.assert_allclose(
@@ -37,7 +37,7 @@ def test_TriangleLineIntersect():
     expected_point = np.array([-0.04057498,  0.13651607,  0.01669149])
 
     # Exercise
-    computed_point = vp.TriangleLineIntersect(line, tri)
+    computed_point = tg.TriangleLineIntersect(line, tri)
 
     # Verify
     np.testing.assert_allclose(

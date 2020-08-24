@@ -13,7 +13,7 @@ print(mc_stencil.expand())
 print(mc_stencil.expand('F'))
 
 # # create a moore neighbourhood stencil
-# moore_stencil = vp.create_stencil("moore", 1, 1)
+# moore_stencil = tg.create_stencil("moore", 1, 1)
 # moore_stencil.set_index([0,0,0], 0)
 # # print(moore_stencil.ntype)
 
