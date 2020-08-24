@@ -6,7 +6,7 @@ import os
 import numpy as np
 import compas.datastructures as ds
 import pyvista as pv
-import volpy as vp
+import topogenesis as tg
 
 __author__ = "Shervin Azadi, and Pirouz Nourian"
 __copyright__ = "???"
@@ -24,14 +24,14 @@ __status__ = "Dev"
 vs = 0.01
 unit = np.array([vs, vs, vs])
 tol = 1e-09
-geo_path = os.path.relpath('Examples/SampleData/bunny_lowpoly.obj')
-geo_mesh = ds.Mesh.from_obj(geo_path)
+mesh_path = os.path.relpath('Examples/SampleData/bunny_lowpoly.obj')
+mesh = tg.load_mesh(mesh_path)
 
 ####################################################
 # Mesh Sample
 ####################################################
 
-sample_cloud, ray_origins = vp.mesh_sampling(geo_mesh, unit, multi_core_process=False, return_ray_origin = True, tol=tol)
+sample_cloud, ray_origins = tg.mesh_sampling(mesh, unit, multi_core_process=False, return_ray_origin = True, tol=tol)
 
 ####################################################
 # Voxelation
@@ -56,7 +56,7 @@ sample_cloud.fast_vis(p)
 lattice.fast_vis(p)
 
 # adding the base mesh: light blue
-mesh = pv.read(geo_path)
+mesh = pv.read(mesh_path)
 p.add_mesh(mesh, show_edges=True, color='#abd8ff', opacity=0.4, label="Base Mesh")
 
 # adding the ray origins: dark blue

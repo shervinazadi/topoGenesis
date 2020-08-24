@@ -1,8 +1,8 @@
-import volpy as vp
+import topogenesis as tg
 
 print("runner")
 # create a stencil based on well-known neighbourhood definitions
-mc_stencil = vp.create_stencil("boolean_marching_cube", 1)
+mc_stencil = tg.create_stencil("boolean_marching_cube", 1)
 print(mc_stencil)
 print(mc_stencil.ntype)
 print(mc_stencil.origin)

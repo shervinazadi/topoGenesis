@@ -8,7 +8,7 @@ import itertools
 import numpy as np
 import pandas as pd
 import networkx as nx
-import volpy as vp
+import topogenesis as tg
 
 __author__ = "Shervin Azadi"
 __copyright__ = "???"
@@ -24,7 +24,7 @@ __status__ = "Dev"
 ####################################################
 
 # read the voxel 3-dimensional indices
-vol_3d_ind_flat = np.genfromtxt('Examples/IN/bunny_volume.csv',
+vol_3d_ind_flat = np.genfromtxt('Examples/SampleData/bunny_volume.csv',
                                 delimiter=',', skip_header=1, usecols=(0, 1, 2)).astype(int)
 # read voxel valus
 vol_flat = np.genfromtxt('Examples/IN/bunny_volume.csv',
@@ -40,7 +40,7 @@ vol = vol_flat.reshape(vol_shape)
 # Connectivity Graph
 ####################################################
 
-CG = vp.connectivity_graph(vol, 3)
+CG = tg.connectivity_graph(vol, 3)
 
 ####################################################
 # Save to CSV files

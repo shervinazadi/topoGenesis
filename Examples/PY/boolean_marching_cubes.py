@@ -1,5 +1,5 @@
 import os               # for path manipulation
-import volpy as vp      # core
+import topogenesis as tg      # core
 import pyvista as pv    # for plotting and visualizations
 
 ### Step 0: Specifing all the inputs
@@ -8,10 +8,10 @@ vs = 0.01               # voxel size
 unit = [vs,vs,vs]       # unit size
 tol = 1e-09             # intersection tolerance
 mesh_path = os.path.relpath('Examples/SampleData/bunny_lowpoly.obj')
-original_mesh = vp.load_mesh(mesh_path)
+original_mesh = tg.load_mesh(mesh_path)
 
 ### Step 1: Sampling the mesh and constructing the point cloud
-sample_cloud = vp.mesh_sampling(original_mesh, unit, tol=tol)
+sample_cloud = tg.mesh_sampling(original_mesh, unit, tol=tol)
 
 ### Step 2: Voxelating the point cloud to construct the lattice
 lattice = sample_cloud.regularize(unit, closed=True)
@@ -27,7 +27,7 @@ p.set_background([0.065, 0.065, 0.065]) # dark grey background
 # p.set_background([1.0, 1.0, 1.0])  # white background
 
 # visualize tiles
-p = vp.marching_cube_vis(p, cube_lattice, "chamfer")
+p = tg.marching_cube_vis(p, cube_lattice, "chamfer")
 
 # # fast visualization of the lattice
 lattice.fast_vis(p)
