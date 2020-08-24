@@ -754,8 +754,7 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     hit_vol_ind = np.transpose(vol_ind_trans)
 
     # retieve the ray origin indicies
-    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1,
-                                                                   2, 0)).reshape(-1, 3) for d in range(dim_num)]
+    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1, 2, 0)).reshape(-1, 3) for d in range(dim_num)]
     ray_orig_ind = np.vstack(ray_orig_ind)
 
     # retrieve the direction of ray shooting for each origin point

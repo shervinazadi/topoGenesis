@@ -13,6 +13,7 @@ from compas.datastructures import Mesh
 import concurrent.futures
 import warnings
 import os
+from numba import njit
 
 __author__ = "Shervin Azadi, and Pirouz Nourian"
 __copyright__ = "???"
@@ -113,6 +114,7 @@ class lattice(np.ndarray):
         return self.bounds[1]
 
     @property
+    @njit
     def centroids(self):
         # extract the indicies of the True values # with sparse matrix we dont need to search
         point_array = np.argwhere(self == True)
@@ -125,6 +127,7 @@ class lattice(np.ndarray):
         # return as a point cloud
         return cloud(point_array, dtype=float)
 
+    @njit
     def fast_vis(self, plot, show_outline=True, show_centroids=True):
 
         # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
@@ -152,6 +155,7 @@ class lattice(np.ndarray):
 
         return plot
 
+    @njit
     def fast_notebook_vis(self, plot, show_outline=True, show_centroids=True):
 
         # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
@@ -182,6 +186,7 @@ class lattice(np.ndarray):
 
         return plot
 
+    @njit
     def boolean_marching_cubes(self):
 
         # construct the boolean_marching_cubes stencil
@@ -294,6 +299,7 @@ class cloud(np.ndarray):
     def maxbound(self):
         return self.bounds[1]
 
+
     def regularize(self, unit, **kwargs):
         """[summary]
 
@@ -319,6 +325,7 @@ class cloud(np.ndarray):
         elif unit.size == 1:
             unit = np.tile(unit, (1, self.bounds.shape[1]))
 
+        # specifiying wether it needs to perform the voxelization with a closed bound or an open bound
         closed = kwargs.get('closed', False)
 
         ####################################################
@@ -326,15 +333,9 @@ class cloud(np.ndarray):
         ####################################################
 
         if closed:
-            # retrieve the identity matrix as a list of main axes
-            axes = np.identity(unit.size).astype(int)
-            # R3 to Z3 : finding the closest voxel to each point
-            point_scaled = self / unit
-            # shift the hit points in each 2-dimension (n in 1-axes) backward and formard (s in [-1,1]) and rint all the possibilities
-            vox_ind = [np.rint(point_scaled + unit * n * s * 0.001) for n in (1-axes) for s in [-1, 1]]
-            vox_ind = np.vstack(vox_ind)
+            vox_ind = np_voxelate_closed(np.array(self), unit)
         else:
-            vox_ind = np.rint(self / unit).astype(int)
+            vox_ind = np_voxelate_open(np.array(self), unit)
 
         # removing repetitions
         unique_vox_ind = np.unique(vox_ind, axis=0).astype(int)
@@ -343,18 +344,13 @@ class cloud(np.ndarray):
         reg_pnt = unique_vox_ind * unit
 
         # initializing the volume
-        l = lattice([self.minbound, self.maxbound], unit=unit,
-                    dtype=bool, default_value=False)
+        l = lattice([self.minbound, self.maxbound], unit=unit, dtype=bool, default_value=False)
 
-        # mapp the indicies to start from zero
+        # map the indicies to start from zero
         mapped_ind = unique_vox_ind - np.rint(l.bounds[0]/l.unit).astype(int)
 
         # setting the occupied voxels to True
         l[mapped_ind[:, 0], mapped_ind[:, 1], mapped_ind[:, 2]] = True
-
-        ####################################################
-        # OUTPUTS
-        ####################################################
 
         return l
 
@@ -451,6 +447,7 @@ class stencil(np.ndarray):
     def maxbound(self):
         return self.bounds[1]
 
+    @njit
     def expand(self, sort="dist"):
         # list the locations
         locations = self.origin - np.argwhere(self)
@@ -475,7 +472,29 @@ class stencil(np.ndarray):
             raise ValueError(" the index needs to have three components")
         self[ind[0],ind[1],ind[2]] = value
 
+@njit
+def np_voxelate_open(cloud, unit):
 
+    vox_ind = np.rint(cloud / unit) #.astype(int)
+    
+    return vox_ind
+
+@njit
+def np_voxelate_closed(cloud, unit):
+
+    # retrieve the identity matrix as a list of main axes
+    axes = 1 - np.identity(unit.size) # .astype(int)
+    # R3 to Z3 : finding the closest voxel to each point
+    point_scaled = cloud / unit
+    # shift the hit points in each 2-dimension (n in 1-axes) backward and formard (s in [-1,1]) and rint all the possibilities
+    # vox_ind = [np.rint(point_scaled + unit * axes[n] * s * 0.001) for n in range(axes.shape[0]) for s in [-1, 1]]
+    # vox_ind = np.vstack(vox_ind)
+    vox_ind = np.array([np.rint(point_scaled + unit * axes[n] * s * 0.001) for n in range(axes.shape[0]) for s in [-1, 1]])
+    print(vox_ind)
+    print(vox_ind.reshape(-1, 3))
+    return vox_ind
+
+@njit
 def create_stencil(type_str, steps, clip=None):
     # check if clip is specified. if it is not, set it to the steps
     if clip == None:
@@ -564,7 +583,6 @@ def create_stencil(type_str, steps, clip=None):
         raise ValueError(
             'non-valid neighborhood type for stencil creation')
 
-
 def scatter(bounds, count):
     """[summary]
 
@@ -575,8 +593,8 @@ def scatter(bounds, count):
     Returns:
         [cloud] -- [returns a cloud object countaing the coordinates of the scattered points]
     """
-    point_array = np.random.uniform(
-        bounds[0], bounds[1], (count, bounds.shape[1]))
+    point_array = np.random.uniform(bounds[0], bounds[1], (count, bounds.shape[1]))
+
     return cloud(point_array)
 
 
@@ -617,7 +635,7 @@ def lattice_from_csv(file_path):
 
     return l
 
-
+@njit
 def find_neighbours(lattice, stencil):
 
     # flatten the lattice
@@ -651,7 +669,7 @@ def find_neighbours(lattice, stencil):
 
     return cell_neighbors
 
-
+@njit
 def marching_cube_vis(p, cube_lattice, style_str):
 
     # extract cube indicies
@@ -695,8 +713,8 @@ def marching_cube_vis(p, cube_lattice, style_str):
     
     return p
 
-
-def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
+@njit
+def mesh_sampling(mesh, unit, **kwargs):
     """This algorithm samples a mesh based on unit size
 
     Args:
@@ -710,6 +728,7 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     ####################################################
     # INPUTS
     ####################################################
+    tol=1e-09
 
     unit = np.array(unit)
     if unit.size == 1:
@@ -717,8 +736,8 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     elif unit.size != 3:
         raise ValueError("unit needs to have three elements representing the unit size for mesh sampling in three dimensions")
     dim_num = unit.size
-    multi_core_process = kwargs.get('multi_core_process', False)
-    return_ray_origin = kwargs.get('return_ray_origin', False)
+    # multi_core_process = kwargs.get('multi_core_process', False)
+    # return_ray_origin = kwargs.get('return_ray_origin', False)
 
     # compare voxel size and tolerance and warn if it is not enough
     if min(unit) * 1e-06 < tol:
@@ -777,7 +796,7 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
 
     samples = []
 
-    # check if multiprocessing is allowed
+    """# check if multiprocessing is allowed
     if multi_core_process:
         # open the context manager
         with concurrent.futures.ProcessPoolExecutor() as executor:
@@ -788,18 +807,19 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
             for f in concurrent.futures.as_completed(results):
                 samples.extend(f.result())
     else:
-        # iterate over the faces
-        # for face in geo_mesh.faces():
-        for face in mesh_faces:
-            # print(face)
-            # print(type(face))
-            # id = np.array(face)
-            # print(mesh_vertices[id])
-            # print(mesh_vertices[np.array(face).astype(int)])
-            # print(mesh_vertices[np.array(face)])
+        """
+    # iterate over the faces
+    # for face in geo_mesh.faces():
+    for face in mesh_faces:
+        # print(face)
+        # print(type(face))
+        # id = np.array(face)
+        # print(mesh_vertices[id])
+        # print(mesh_vertices[np.array(face).astype(int)])
+        # print(mesh_vertices[np.array(face)])
 
-            face_hit_pos = intersect(mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol)
-            samples.extend(face_hit_pos)
+        face_hit_pos = intersect(mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol)
+        samples.extend(face_hit_pos)
 
     ####################################################
     # OUTPUTS
@@ -814,7 +834,7 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     # if the list has more than one item, return it as a tuple, if it has only one item, return the item itself
     return tuple(out) if len(out) > 1 else out[0]
 
-
+@njit
 def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
     face_hit_pos = []
 
@@ -853,7 +873,7 @@ def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
 
     return(face_hit_pos)
 
-
+@njit
 def TriangleLineIntersect(L, Vx, tol=1e-06):
     """
     Computing the intersection of a line with a triangle
@@ -922,7 +942,7 @@ def TriangleLineIntersect(L, Vx, tol=1e-06):
     else:
         return None
 
-
+@njit
 def surface_normal_newell_vectorized(poly):
     """    
     https://stackoverflow.com/questions/39001642/calculating-surface-normal-in-python-using-newells-method
