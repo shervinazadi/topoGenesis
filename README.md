@@ -48,11 +48,10 @@ conda create --name genesis python=3.7.4
 conda activate genesis
 ```
 
-3. install all dependencies:["compas", "pandas"]
+3. install all dependencies:["numpy"]
 
 ```Shell Script
-conda install compas
-conda install pandas
+conda install numpy
 ```
 
 4. go to the source directory of topogenesis and install it locally within your environment with a symlink:
