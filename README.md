@@ -1,6 +1,11 @@
 # topoGenesis
 
-[topoGenesis](https://github.com/shervinazadi/topoGenesis) is an open-source python package that provides topological structures and functions for Generative Systems and Sciences.
+[topoGenesis](https://github.com/shervinazadi/topoGenesis) is an open-source python package that provides topological structures and functions for Generative Systems and Sciences for various application areas such as:
+- generative design in architecture and built environment
+- generative spatial simulations
+- 3D image processing
+- topological data analysis
+- machine learning
 
 ## Vision
 
