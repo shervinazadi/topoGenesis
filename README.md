@@ -74,6 +74,6 @@ to make sure that the terminal inside VS Code is using the same python as your c
     }
 ```
 
-## GSS-Lab
+## Genesis Lab: Laboratory of Generative Systems and Sciences
 
-This project is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at Genesis Lab: Laboratory of Generative Systems and Sciences, Department of Architectural Engineering and Technology, at TU Delft.
+This project is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at [Genesis Lab: Laboratory of Generative Systems and Sciences](https://www.researchgate.net/lab/Genesis-Laboratory-of-Generative-Systems-and-Sciences-Pirouz-Nourian), Department of Architectural Engineering and Technology, at TU Delft.
