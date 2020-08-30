@@ -6,10 +6,6 @@ Main Data Structure of the topoGenesis
 import numpy as np
 import pyvista as pv
 import itertools
-import pandas as pd
-import networkx as nx
-import compas
-from compas.datastructures import Mesh
 import concurrent.futures
 import warnings
 import os
