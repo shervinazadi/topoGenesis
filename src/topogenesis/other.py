@@ -1,6 +1,6 @@
 
 """
-Rasterizing a mesh to a volumetric datastructure
+Algorithm Sketches that need to be integrated with the rest of library
 """
 
 import itertools
@@ -304,3 +304,33 @@ def RandomWalkingAgents(data):
     data.update(result)
 
     return result
+
+
+def gradient(sfield):
+
+    # partial derivatives
+    dx = (sfield[:-2, 1:-1, 1:-1] - sfield[2:, 1:-1, 1:-1]) * 0.5
+    dy = (sfield[1:-1, :-2, 1:-1] - sfield[1:-1, 2:, 1:-1]) * 0.5
+    dz = (sfield[1:-1, 1:-1, :-2] - sfield[1:-1, 1:-1, 2:]) * 0.5
+
+    # stack gradient
+    g = np.stack([dx, dy, dz], axis=0)
+
+    return(g)
+
+
+def divergence(vfield):
+
+    X = vfield[0]
+    Y = vfield[0]
+    Z = vfield[0]
+
+    # partial derivatives
+    dx = (X[:-2, 1:-1, 1:-1] - X[2:, 1:-1, 1:-1]) * 0.5
+    dy = (Y[1:-1, :-2, 1:-1] - Y[1:-1, 2:, 1:-1]) * 0.5
+    dz = (Z[1:-1, 1:-1, :-2] - Z[1:-1, 1:-1, 2:]) * 0.5
+
+    # sum divergence
+    d = dx + dy + dz
+
+    return(d)
