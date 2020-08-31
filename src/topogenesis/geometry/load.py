@@ -19,6 +19,7 @@ __email__ = "shervinazadi93@gmail.com"
 __status__ = "Dev"
 
 file_directory = os.path.dirname(os.path.abspath(__file__))
+
 def load_mesh(mesh_path):
     # load the mesh using pyvista
     pv_mesh = pv.read(mesh_path)
@@ -33,3 +34,5 @@ def load_mesh(mesh_path):
 
     # return them as 3d numpy arrays
     return np.array(v).astype(np.float64), np.array(f).astype(np.int64)
+
+

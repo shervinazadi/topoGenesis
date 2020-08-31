@@ -11,6 +11,8 @@ import concurrent.futures
 import warnings
 import os
 
+from ..datastructures import cloud
+
 __author__ = "Shervin Azadi, and Pirouz Nourian"
 __copyright__ = "???"
 __credits__ = ["Shervin Azadi", "Pirouz Nourian"]
@@ -21,6 +23,125 @@ __email__ = "shervinazadi93@gmail.com"
 __status__ = "Dev"
 
 file_directory = os.path.dirname(os.path.abspath(__file__))
+
+
+def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
+    """This algorithm samples a mesh based on unit size
+
+    Args:
+        geo_mesh ([COMPAS Mesh]): [description]
+        unit ([numpy array]): [Unit represents the unit size in the sampling grid. It needs to be one float value or an array-like with three elements. In case that a scalar is given it will used for all three dimensions]
+        tol ([type], optional): [description]. Defaults to 1e-06.
+
+    Returns:
+        [type]: [description]
+    """
+    ####################################################
+    # INPUTS
+    ####################################################
+
+    unit = np.array(unit)
+    if unit.size == 1:
+        unit = np.array([unit, unit, unit])
+    elif unit.size != 3:
+        raise ValueError("unit needs to have three elements representing the unit size for mesh sampling in three dimensions")
+    dim_num = unit.size
+    multi_core_process = kwargs.get('multi_core_process', False)
+    return_ray_origin = kwargs.get('return_ray_origin', False)
+
+    # compare voxel size and tolerance and warn if it is not enough
+    if min(unit) * 1e-06 < tol:
+        warnings.warn(
+            "Warning! The tolerance for rasterization is not small enough, it may result in faulty results or failure of rasterization. Try decreasing the tolerance or scaling the geometry.")
+
+    ####################################################
+    # Initialize the volumetric array
+    ####################################################
+    mesh_vertices, mesh_faces = mesh
+
+    # retrieve the bounding box information
+    mesh_bb_min = np.amin(mesh_vertices, axis=0)
+    mesh_bb_max = np.amax(mesh_vertices, axis=0)
+    mesh_bb_size = mesh_bb_max - mesh_bb_min
+
+    # find the minimum index in discrete space
+    mesh_bb_min_z3 = np.rint(mesh_bb_min / unit).astype(int)
+    # calculate the size of voxelated volume
+    vol_size = np.ceil((mesh_bb_size / unit)+1).astype(int)
+    # initiate the 3d array of voxel space called volume
+    vol = np.zeros(vol_size)
+
+    ####################################################
+    # claculate the origin and direction of rays
+    ####################################################
+
+    # increasing the vol_size by one to accomodate for shooting from corners
+    vol_size_off = vol_size + 1
+    # retriev the voxel index for ray origins
+    hit_vol_ind = np.indices(vol_size_off)
+    vol_ind_trans = np.transpose(hit_vol_ind) + mesh_bb_min_z3
+    hit_vol_ind = np.transpose(vol_ind_trans)
+
+    # retieve the ray origin indicies
+    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1, 2, 0)).reshape(-1, 3) for d in range(dim_num)]
+    ray_orig_ind = np.vstack(ray_orig_ind)
+
+    # retrieve the direction of ray shooting for each origin point
+    normals = np.identity(dim_num).astype(int)
+    # tile(stamp) the X-ray direction with the (Y-direction * Z-direction) . Then repeat this for all dimensions
+    ray_dir = [np.tile(normals[d], (vol_size_off[(d+1) % dim_num]*vol_size_off[(d+2) % dim_num], 1))
+               for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
+    ray_dir = np.vstack(ray_dir)
+
+    # project the ray origin + shift it with half of the voxel siz to move it to corners of the voxels
+    ray_orig = ray_orig_ind * unit + unit * -0.5  # * (1 - ray_dir)
+
+    # project the ray origin
+    proj_ray_orig = ray_orig * (1 - ray_dir)
+
+    ####################################################
+    # intersection
+    ####################################################
+
+    samples = []
+
+    # check if multiprocessing is allowed
+    if multi_core_process:
+        # open the context manager
+        with concurrent.futures.ProcessPoolExecutor() as executor:
+            # submit the processes
+            # results = [executor.submit(intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in geo_mesh.faces()]
+            results = [executor.submit(intersect, mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in mesh_faces]
+            # fetch the results
+            for f in concurrent.futures.as_completed(results):
+                samples.extend(f.result())
+    else:
+        # iterate over the faces
+        # for face in geo_mesh.faces():
+        for face in mesh_faces:
+            # print(face)
+            # print(type(face))
+            # id = np.array(face)
+            # print(mesh_vertices[id])
+            # print(mesh_vertices[np.array(face).astype(int)])
+            # print(mesh_vertices[np.array(face)])
+
+            face_hit_pos = intersect(mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol)
+            samples.extend(face_hit_pos)
+
+    ####################################################
+    # OUTPUTS
+    ####################################################
+
+    # set the output list
+    out = [cloud(np.array(samples))]
+    # check if the ray origins are requested
+    if return_ray_origin:
+        out.append(cloud(np.array(ray_orig)))
+
+    # if the list has more than one item, return it as a tuple, if it has only one item, return the item itself
+    return tuple(out) if len(out) > 1 else out[0]
+
 
 def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
     face_hit_pos = []
