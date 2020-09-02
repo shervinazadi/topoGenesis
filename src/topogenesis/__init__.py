@@ -1,6 +1,6 @@
+# from .data import *
+from .datastructures import *
 
-from .raster import *
-from .diff import *
-from .data import *
+from . import geometry
 # importing as a module
 # from . import data
