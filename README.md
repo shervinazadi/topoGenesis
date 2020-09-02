@@ -1,7 +1,7 @@
 # topoGenesis
 
 [![DOI](https://zenodo.org/badge/268286072.svg)](https://zenodo.org/badge/latestdoi/268286072)
-[![codecov.io](https://codecov.io/github/shervinazadi/topogenesis/coverage.svg?branch=master)]
+![codecov.io](https://codecov.io/github/shervinazadi/topogenesis/coverage.svg?branch=master)
 
 [topoGenesis](https://github.com/shervinazadi/topoGenesis) is an open-source python package that provides topological structures and functions for Generative Systems and Sciences for various application areas such as:
 - generative design in architecture and built environment
