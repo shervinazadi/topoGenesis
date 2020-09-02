@@ -4,6 +4,7 @@ Cloud DataStructure
 """
 
 import numpy as np
+import pandas as pd
 import pyvista as pv
 import itertools
 import concurrent.futures
@@ -35,8 +36,11 @@ class lattice(np.ndarray):
         # unit nparray
         unit = np.array(unit)
 
+        # if the unit vector size is 1, tile it with the size of minimum vector
+        if unit.size == 1:
+            unit = np.tile(unit, minbound.size)
         # raise value error if the size of unit is neighter 1 nor the length of the minimum
-        if unit.size != 1 and unit.size != minbound.size:
+        elif unit.size != minbound.size:
             raise ValueError(
                 'the length of unit array needs to be either 1 or equal to the min/max arrays')
 
@@ -45,9 +49,7 @@ class lattice(np.ndarray):
 
         # set defualt value
         if default_value != None:
-            buffer = np.tile(
-                default_value, shape)
-            #obj = obj * 0 + default_value
+            buffer = np.tile(default_value, shape.flatten())
 
         # Create the ndarray instance of our type, given the usual
         # ndarray input arguments.  This will call the standard
@@ -59,10 +61,8 @@ class lattice(np.ndarray):
 
         # set the  'bounds' attribute
         obj.bounds = bounds
-        # set the attribute 'unit' to itself if it has the same size as the minimum,
-        # if the size is 1, tile it with the size of minimum vector
-        obj.unit = unit if unit.size == minbound.size else np.tile(
-            unit, minbound.size)
+        # set the attribute 'unit' to itself 
+        obj.unit = unit
 
         # init an empty connectivity
         obj.connectivity = None
@@ -229,6 +229,45 @@ class lattice(np.ndarray):
     def find_connectivity(self, stencil):
         raise NotImplementedError
 
+    def to_csv(self, filepath):
+        # volume to panda dataframe
+        vol_df = self.to_panadas()
+        
+        # specifying metadata and transposig it
+        metadata = pd.DataFrame({
+            'minbound' : self.minbound,
+            'shape' : np.array(self.shape),
+            'unit' : self.unit,
+        })
+
+        with open(filepath, 'w') as df_out:
+
+            metadata.to_csv(df_out, index=False, header=True, float_format='%g')
+
+            df_out.write('\n')
+
+            vol_df.to_csv(df_out, index=False, float_format='%g')
+    
+    def to_panadas(self):
+        # get the indicies of the voxels
+        vol_3d_ind = np.indices(self.shape)
+
+        # flatten except the last dimension
+        vol_3d_ind_flat = vol_3d_ind.transpose(1, 2, 3, 0).reshape(-1, 3)
+
+        # flatten the volume
+        vol_flat = self.ravel()
+
+        # volume data to panda dataframe
+        vol_df = pd.DataFrame(
+            {
+                'IX': vol_3d_ind_flat[:, 0],
+                'IY': vol_3d_ind_flat[:, 1],
+                'IZ': vol_3d_ind_flat[:, 2],
+                'value': vol_flat,
+            })
+        return vol_df
+
 
 class cloud(np.ndarray):
 
@@ -309,11 +348,11 @@ class cloud(np.ndarray):
         # INPUTS
         ####################################################
         unit = np.array(unit)
-        if unit.size != 1 and unit.size != self.bounds.shape[1]:
+        if unit.size != 1 and unit.size != self.minbound.shape:
             raise ValueError(
                 'the length of unit array needs to be either 1 or equal to the dimension of point cloud')
         elif unit.size == 1:
-            unit = np.tile(unit, (1, self.bounds.shape[1]))
+            unit = np.tile(unit, self.minbound.shape)
 
         closed = kwargs.get('closed', False)
 
