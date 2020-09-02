@@ -3,7 +3,7 @@ import numpy as np
 import os
 
 file_directory = os.path.dirname(os.path.abspath(__file__))
-sample_data_path = os.path.join(os.path.dirname(file_directory), "resources", "sample_data")
+sample_data_path = os.path.join(os.path.dirname(file_directory), "data")
 
 def test_surface_normal_newell_vectorized():
     """
