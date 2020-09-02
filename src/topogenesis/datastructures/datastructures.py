@@ -22,6 +22,7 @@ __status__ = "Dev"
 
 file_directory = os.path.dirname(os.path.abspath(__file__))
 
+
 class lattice(np.ndarray):
 
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
@@ -61,7 +62,7 @@ class lattice(np.ndarray):
 
         # set the  'bounds' attribute
         obj.bounds = bounds
-        # set the attribute 'unit' to itself 
+        # set the attribute 'unit' to itself
         obj.unit = unit
 
         # init an empty connectivity
@@ -136,7 +137,8 @@ class lattice(np.ndarray):
         threshed = grid.threshold([0.9, 1.1])
 
         # adding the voxels: light red
-        plot.add_mesh(threshed, show_edges=True, color="#ff8fa3", opacity=0.3, label="Cells")
+        plot.add_mesh(threshed, show_edges=True, color="#ff8fa3",
+                      opacity=0.3, label="Cells")
 
         if show_outline:
             # adding the boundingbox wireframe
@@ -144,7 +146,8 @@ class lattice(np.ndarray):
 
         if show_centroids:
             # adding the voxel centeroids: red
-            plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5, render_points_as_spheres=True, label="Cell Centroidss")
+            plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5,
+                          render_points_as_spheres=True, label="Cell Centroidss")
 
         return plot
 
@@ -185,7 +188,7 @@ class lattice(np.ndarray):
 
         # getting shifts by expanding the stencil in the Fortran Order
         shifts = mc_stencil.expand('F')
-        
+
         # pad the volume with zero in every direction
         # TODO make this an option instead of default
         volume = np.pad(self, (1, 1), mode='constant', constant_values=(0, 0))
@@ -194,15 +197,16 @@ class lattice(np.ndarray):
         volume_inds = np.arange(volume.size).reshape(volume.shape)
 
         # gattering all the replacements in the collumns
-        replaced_columns = [np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
+        replaced_columns = [
+            np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
 
         # stacking the columns
         cell_corners = np.stack(replaced_columns, axis=-1)
 
         # converting volume value (TODO: this needs to become a method of its own)
         volume_flat = volume.ravel()
-        volume_flat[volume_flat>0.5] = 1
-        volume_flat[volume_flat<0.5] = 0
+        volume_flat[volume_flat > 0.5] = 1
+        volume_flat[volume_flat < 0.5] = 0
 
         # replace neighbours by their value in volume
         neighbor_values = volume_flat[cell_corners]
@@ -212,17 +216,19 @@ class lattice(np.ndarray):
         legend = 2**np.arange(8)
 
         # multiply the corner with the power of two, sum them, and reshape to the original volume shape
-        tile_id = np.sum(legend * neighbor_values, axis=1).reshape(volume.shape)
+        tile_id = np.sum(legend * neighbor_values,
+                         axis=1).reshape(volume.shape)
 
         # drop the last column, row and page (since cube-grid is 1 less than the voxel grid in every dimension)
         # TODO consider that removing padding would eliminate the need for this line
         cube_grid = tile_id[:-1, :-1, :-1]
 
         # initializing the lattice
-        cube_lattice = lattice([self.minbound, self.maxbound + self.unit], unit=self.unit, dtype=np.uint8, buffer=cube_grid, default_value=False)
-        
+        cube_lattice = lattice([self.minbound, self.maxbound + self.unit],
+                               unit=self.unit, dtype=np.uint8, buffer=cube_grid, default_value=False)
+
         # set the values that are bigger than 0 (transfering values)
-        cube_lattice[cube_grid>0] = cube_grid[cube_grid>0] 
+        cube_lattice[cube_grid > 0] = cube_grid[cube_grid > 0]
 
         return cube_lattice
 
@@ -232,22 +238,23 @@ class lattice(np.ndarray):
     def to_csv(self, filepath):
         # volume to panda dataframe
         vol_df = self.to_panadas()
-        
+
         # specifying metadata and transposig it
         metadata = pd.DataFrame({
-            'minbound' : self.minbound,
-            'shape' : np.array(self.shape),
-            'unit' : self.unit,
+            'minbound': self.minbound,
+            'shape': np.array(self.shape),
+            'unit': self.unit,
         })
 
         with open(filepath, 'w') as df_out:
 
-            metadata.to_csv(df_out, index=False, header=True, float_format='%g')
+            metadata.to_csv(df_out, index=False,
+                            header=True, float_format='%g')
 
             df_out.write('\n')
 
             vol_df.to_csv(df_out, index=False, float_format='%g')
-    
+
     def to_panadas(self):
         # get the indicies of the voxels
         vol_3d_ind = np.indices(self.shape)
@@ -366,7 +373,8 @@ class cloud(np.ndarray):
             # R3 to Z3 : finding the closest voxel to each point
             point_scaled = self / unit
             # shift the hit points in each 2-dimension (n in 1-axes) backward and formard (s in [-1,1]) and rint all the possibilities
-            vox_ind = [np.rint(point_scaled + unit * n * s * 0.001) for n in (1-axes) for s in [-1, 1]]
+            vox_ind = [np.rint(point_scaled + unit * n * s * 0.001)
+                       for n in (1-axes) for s in [-1, 1]]
             vox_ind = np.vstack(vox_ind)
         else:
             vox_ind = np.rint(self / unit).astype(int)
@@ -396,7 +404,11 @@ class cloud(np.ndarray):
     def fast_vis(self, plot):
 
         # adding the original point cloud: blue
-        plot.add_mesh(pv.PolyData(self), color='#2499ff', point_size=3, render_points_as_spheres=True, label="Point Cloud")
+        plot.add_mesh(pv.PolyData(self),
+                      color='#2499ff',
+                      point_size=3,
+                      render_points_as_spheres=True,
+                      label="Point Cloud")
 
         return plot
 
@@ -406,14 +418,14 @@ class cloud(np.ndarray):
         plot.add_points(pv.PolyData(self), color='#2499ff')
 
         return plot
-    
+
     def to_csv(self, path, delimiter=","):
         np.savetxt(path, self, delimiter=delimiter)
 
 
 class stencil(np.ndarray):
 
-    def __new__(subtype, point_array, ntype="Custom", origin=np.array([0,0,0]), dtype=int, buffer=None, offset=0,
+    def __new__(subtype, point_array, ntype="Custom", origin=np.array([0, 0, 0]), dtype=int, buffer=None, offset=0,
                 strides=None, order=None):
 
         # extracting the shape from point_array
@@ -426,8 +438,8 @@ class stencil(np.ndarray):
         # ndarray constructor, but return an object of our type.
         # It also triggers a call to stencil.__array_finalize__
         obj = super(stencil, subtype).__new__(subtype, shape, dtype,
-                                            buffer, offset, strides,
-                                            order)
+                                              buffer, offset, strides,
+                                              order)
 
         # set the neighbourhood type
         obj.ntype = ntype
@@ -469,10 +481,10 @@ class stencil(np.ndarray):
         self.ntype = getattr(obj, 'ntype', None)
         self.origin = getattr(obj, 'origin', None)
 
-
         # We do not need to return anything
+
     def __array_wrap__(self, array, context=None):
-        
+
         temp = np.array(array)
 
         # checking if the array has any value other than 0, and 1
@@ -494,24 +506,24 @@ class stencil(np.ndarray):
         locations = self.origin - np.argwhere(self)
 
         # check the sorting method
-        
-        if sort=="dist": # Sorted Based on the distance from origin
+
+        if sort == "dist":  # Sorted Based on the distance from origin
             # calculating the distance of each neighbour
             sums = np.abs(locations).sum(axis=1)
             # sorting to identify the main cell
             order = np.argsort(sums)
 
-        elif sort=="F": # Fortran Sort, used for Boolean Marching Cubes
+        elif sort == "F":  # Fortran Sort, used for Boolean Marching Cubes
             order = np.arange(self.size).reshape(self.shape).flatten('F')
 
         # sort and return
         return locations[order].astype(int)
-    
+
     def set_index(self, index, value):
         ind = np.array(index) + self.origin
         if ind.size != 3:
             raise ValueError(" the index needs to have three components")
-        self[ind[0],ind[1],ind[2]] = value
+        self[ind[0], ind[1], ind[2]] = value
 
 
 def create_stencil(type_str, steps, clip=None):
@@ -526,13 +538,18 @@ def create_stencil(type_str, steps, clip=None):
         shifts = np.array(list(itertools.product(
             list(range(-clip, clip+1)), repeat=3)))
 
-        # the number of steps that the neighbour is appart from the cell (setp=1 : 6 neighbour, step=2 : 18 neighbours, step=3 : 26 neighbours)
+        # the number of steps that the neighbour is appart from
+        # the cell (setp=1 : 6 neighbour, step=2 : 18 neighbours,
+        # step=3 : 26 neighbours)
         shift_steps = np.sum(np.absolute(shifts), axis=1)
 
         # check the number of steps
         chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
-        
-        # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
+
+        # select the valid indices from shifts variable,
+        # transpose them to get
+        # separate indicies in rows, add the number of
+        # steps to make this an index
         locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
         # inilize the stencil
@@ -541,11 +558,13 @@ def create_stencil(type_str, steps, clip=None):
         # fill in the stencil
         s[locs[0], locs[1], locs[2]] = 1
 
-        return stencil(s, ntype=type_str, origin=np.array([clip, clip, clip]))
+        return stencil(s,
+                       ntype=type_str,
+                       origin=np.array([clip, clip, clip]))
 
     elif type_str == "moore":
         # https://en.wikipedia.org/wiki/Moore_neighborhood
-        
+
         # claculating all the possible shifts to apply to the array
         shifts = np.array(list(itertools.product(
             list(range(-clip, clip+1)), repeat=3)))
@@ -555,8 +574,10 @@ def create_stencil(type_str, steps, clip=None):
 
         # check the number of steps
         chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
-        
-        # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
+
+        # select the valid indices from shifts variable,
+        # transpose them to get separate indicies in rows,
+        # add the number of steps to make this an index
         locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
         # inilize the stencil
@@ -568,37 +589,12 @@ def create_stencil(type_str, steps, clip=None):
         return stencil(s, ntype=type_str, origin=np.array([clip, clip, clip]))
 
     elif type_str == "boolean_marching_cube":
-        
-        # # shifts to check 8 corner of cube (multiply by -1 since shift goes backward)
-        # shifts = np.array([
-        #     [0, 0, 0],  # 1
-        #     [1, 0, 0],  # 2
-        #     [0, 1, 0],  # 4
-        #     [1, 1, 0],  # 8
-        #     [0, 0, 1],  # 16
-        #     [1, 0, 1],  # 32
-        #     [0, 1, 1],  # 64
-        #     [1, 1, 1]   # 128
-        # ])*-1
-
-        # # the number of steps that the neighbour is appart from the origin cell
-        # shift_steps = np.max(np.absolute(shifts), axis=1)
-
-        # # check the number of steps
-        # chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
-        
-        # # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
-        # locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
         # inilize the stencil
-        s = np.ones((2,2,2)).astype(int)
+        s = np.ones((2, 2, 2)).astype(int)
 
-        # # fill in the stencil
-        # s[locs[0], locs[1], locs[2]] = 1
-
-        return stencil(s, ntype=type_str, origin=np.array([0,0,0]))
+        return stencil(s, ntype=type_str, origin=np.array([0, 0, 0]))
 
     else:
         raise ValueError(
             'non-valid neighborhood type for stencil creation')
-

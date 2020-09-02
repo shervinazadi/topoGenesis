@@ -30,7 +30,10 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
 
     Args:
         geo_mesh ([COMPAS Mesh]): [description]
-        unit ([numpy array]): [Unit represents the unit size in the sampling grid. It needs to be one float value or an array-like with three elements. In case that a scalar is given it will used for all three dimensions]
+        unit ([numpy array]): [Unit represents the unit size in the 
+        sampling grid. It needs to be one float value or an array-like
+        with three elements. In case that a scalar is given it will 
+        used for all three dimensions]
         tol ([type], optional): [description]. Defaults to 1e-06.
 
     Returns:
@@ -44,7 +47,9 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     if unit.size == 1:
         unit = np.array([unit, unit, unit])
     elif unit.size != 3:
-        raise ValueError("unit needs to have three elements representing the unit size for mesh sampling in three dimensions")
+        raise ValueError(
+            """unit needs to have three elements representing
+            the unit size for mesh sampling in three dimensions""")
     dim_num = unit.size
     multi_core_process = kwargs.get('multi_core_process', False)
     return_ray_origin = kwargs.get('return_ray_origin', False)
@@ -52,7 +57,10 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     # compare voxel size and tolerance and warn if it is not enough
     if min(unit) * 1e-06 < tol:
         warnings.warn(
-            "Warning! The tolerance for rasterization is not small enough, it may result in faulty results or failure of rasterization. Try decreasing the tolerance or scaling the geometry.")
+            """Warning! The tolerance for rasterization is not small 
+            enough, it may result in faulty results or failure of
+            rasterization.Trydecreasingthetolerance or scaling
+            the geometry.""")
 
     ####################################################
     # Initialize the volumetric array
@@ -75,25 +83,37 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     # claculate the origin and direction of rays
     ####################################################
 
-    # increasing the vol_size by one to accomodate for shooting from corners
+    # increasing the vol_size by one to accomodate for
+    # shooting from corners
     vol_size_off = vol_size + 1
+
     # retriev the voxel index for ray origins
     hit_vol_ind = np.indices(vol_size_off)
     vol_ind_trans = np.transpose(hit_vol_ind) + mesh_bb_min_z3
     hit_vol_ind = np.transpose(vol_ind_trans)
 
     # retieve the ray origin indicies
-    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1, 2, 0)).reshape(-1, 3) for d in range(dim_num)]
+    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1)
+                    .transpose((1, 2, 0))
+                    .reshape(-1, 3)
+                    for d in range(dim_num)]
     ray_orig_ind = np.vstack(ray_orig_ind)
 
     # retrieve the direction of ray shooting for each origin point
     normals = np.identity(dim_num).astype(int)
-    # tile(stamp) the X-ray direction with the (Y-direction * Z-direction) . Then repeat this for all dimensions
-    ray_dir = [np.tile(normals[d], (vol_size_off[(d+1) % dim_num]*vol_size_off[(d+2) % dim_num], 1))
-               for d in range(dim_num)]  # this line has a problem given the negative indicies are included now
+
+    # tile(stamp) the X-ray direction with the (Y-direction
+    # * Z-direction) . Then repeat this for all dimensions
+    # TODO: this line has a problem given the negative indicies
+    # are included now
+    ray_dir = [np.tile(normals[d],
+                       (vol_size_off[(d + 1) % dim_num]
+                        * vol_size_off[(d + 2) % dim_num], 1))
+               for d in range(dim_num)]
     ray_dir = np.vstack(ray_dir)
 
-    # project the ray origin + shift it with half of the voxel siz to move it to corners of the voxels
+    # project the ray origin + shift it with half of the voxel size
+    # to move it to corners of the voxels
     ray_orig = ray_orig_ind * unit + unit * -0.5  # * (1 - ray_dir)
 
     # project the ray origin
@@ -110,8 +130,12 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
         # open the context manager
         with concurrent.futures.ProcessPoolExecutor() as executor:
             # submit the processes
-            # results = [executor.submit(intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in geo_mesh.faces()]
-            results = [executor.submit(intersect, mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in mesh_faces]
+            # results = [executor.submit(intersect, geo_mesh, face,
+            # unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir,
+            # tol) for face in geo_mesh.faces()]
+            results = [executor.submit(intersect, mesh_vertices[face], unit,
+                                       mesh_bb_size, ray_orig, proj_ray_orig,
+                                       ray_dir, tol) for face in mesh_faces]
             # fetch the results
             for f in concurrent.futures.as_completed(results):
                 samples.extend(f.result())
@@ -126,7 +150,8 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
             # print(mesh_vertices[np.array(face).astype(int)])
             # print(mesh_vertices[np.array(face)])
 
-            face_hit_pos = intersect(mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol)
+            face_hit_pos = intersect(mesh_vertices[face], unit, mesh_bb_size,
+                                     ray_orig, proj_ray_orig, ray_dir, tol)
             samples.extend(face_hit_pos)
 
     ####################################################
@@ -139,18 +164,21 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     if return_ray_origin:
         out.append(cloud(np.array(ray_orig)))
 
-    # if the list has more than one item, return it as a tuple, if it has only one item, return the item itself
+    # if the list has more than one item, return it as a tuple, if it
+    # has only one item, return the item itself
     return tuple(out) if len(out) > 1 else out[0]
 
 
-def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol):
+def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig,
+              proj_ray_orig, ray_dir, tol):
     face_hit_pos = []
 
     # check if the face is a triangle
     if face_verticies_xyz.shape[0] != 3:
         return([])
 
-    # check if any coordinate of the projected ray origin is in betwen the max and min of the coordinates of the face
+    # check if any coordinate of the projected ray origin is in betwen
+    # the max and min of the coordinates of the face
     min_con = proj_ray_orig >= np.amin(
         face_verticies_xyz, axis=0)*(1 - ray_dir)
     max_con = proj_ray_orig <= np.amax(
@@ -166,13 +194,12 @@ def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
         direction = ray_dir[ray]
         # retrieve ray origin
         orig_pos = ray_orig[ray]
-        # calc the destination of ray (max distance that it needs to travel)
-        # this line has a problem given the negative indicies are included now
+        # calc the destination of ray (max distance that it needs to
+        # travel) this line has a problem given the negative indicies
+        # are included now
         dest_pos = orig_pos + direction * mesh_bb_size
 
         # intersction
-        # compas version
-        # hit_pt = compas.geometry.intersection_line_triangle((orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         # Translated from Pirouz C#
         hit_pt = triangle_line_intersect(
             (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
@@ -206,7 +233,7 @@ def triangle_line_intersect(L, Vx, tol=1e-06):
 
     if len(Vx) != 3:
         raise ValueError('A triangle needs to have three vertexes')
-    
+
     ####################################################
     # PROCEDURE
     ####################################################
@@ -216,7 +243,7 @@ def triangle_line_intersect(L, Vx, tol=1e-06):
     U = Vx[1] - Vx[0]
     V = Vx[2] - Vx[0]
     # finding normal vector
-    N = surface_normal_newell_vectorized(Vx) # np.cross(U, V)
+    N = surface_normal_newell_vectorized(Vx)  # np.cross(U, V)
 
     Nomin = np.dot((O - L[0]), N)
     Denom = np.dot(N, (L[1] - L[0]))
@@ -224,7 +251,9 @@ def triangle_line_intersect(L, Vx, tol=1e-06):
     if Denom != 0:
         alpha = Nomin / Denom
 
-        # L[0] + np.dot(alpha, (L[1] - L[0])): parameter along the line where it intersects the plane in question, only if not paralell to the plane
+        # L[0] + np.dot(alpha, (L[1] - L[0])): parameter along the
+        # line where it intersects the plane in question, only if
+        # not paralell to the plane
         W = L[0] + np.dot(alpha, (L[1] - L[0])) - O
 
         UU = np.dot(U, U)
@@ -283,7 +312,7 @@ def surface_normal_newell_vectorized(poly):
     poly_11 = np.roll(poly, [-1, -1], np.arange(2))
 
     n = np.roll(np.sum((poly - poly_10) * (poly_01 + poly_11), axis=0), -1, 0)
-   
+
     norm = np.linalg.norm(n)
     if norm == 0:
         raise ValueError('zero norm')

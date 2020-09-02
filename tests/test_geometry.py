@@ -5,6 +5,7 @@ import os
 file_directory = os.path.dirname(os.path.abspath(__file__))
 sample_data_path = os.path.join(os.path.dirname(file_directory), "data")
 
+
 def test_surface_normal_newell_vectorized():
     """
     Testing the vectorized version of newell method for finding the normal of a triangle with hardcoded data
@@ -14,6 +15,7 @@ def test_surface_normal_newell_vectorized():
     tri = np.array([[-0.00601774128, 0.130592465, 0.0237104725],
                     [-0.0866273791, 0.153729707, 0.0216472838],
                     [-0.0290798154, 0.125226036, 0.00471670832]])
+
     expected_normal = np.array([-0.24662338, -0.81206861,  0.52888702])
 
     # Exercise
@@ -49,27 +51,29 @@ def test_triangle_line_intersect():
 
     # Cleanup
 
+
 def test_mesh_sampling():
     """
     Testing the mesh sampling with sample
     """
 
     # Setup
-    tol=1e-09
+    tol = 1e-09
 
-    mesh = tg.geometry.load_mesh(os.path.join(sample_data_path,"bunny_lowpoly.obj"))
+    mesh = tg.geometry.load_mesh(os.path.join(
+        sample_data_path, "bunny_lowpoly.obj"))
 
     expected_sample_cloud = np.array(
-        [[0.0064880164,       0.05,        0.05        ],
-        [-0.009171068 ,       0.05,        0.05        ],
-        [-0.05        ,       0.05,        0.0358800451],
-        [ 0.05        ,       0.05,        0.0254832824],
-        [ 0.05        ,       0.05,       -0.0011166829],
-        [-0.05        ,       0.15,        0.0113995458],
-        [-0.05        ,       0.15,       -0.0041858891],
-        [-0.05        ,       0.05,       -0.0079428066]]
-        )
-        #
+        [[0.0064880164, 0.05,  0.05],
+         [-0.009171068, 0.05,  0.05],
+         [-0.05, 0.05,  0.0358800451],
+         [0.05, 0.05,  0.0254832824],
+         [0.05, 0.05, -0.0011166829],
+         [-0.05, 0.15,  0.0113995458],
+         [-0.05, 0.15, -0.0041858891],
+         [-0.05, 0.05, -0.0079428066]]
+    )
+    #
     # Exercise
     computedted_sample_cloud = tg.geometry.mesh_sampling(mesh, 0.1, tol=tol)
 
