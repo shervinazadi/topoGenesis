@@ -174,7 +174,7 @@ def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
         # compas version
         # hit_pt = compas.geometry.intersection_line_triangle((orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         # Translated from Pirouz C#
-        hit_pt = TriangleLineIntersect(
+        hit_pt = triangle_line_intersect(
             (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
         if hit_pt is not None:
             face_hit_pos.append(hit_pt)
@@ -182,7 +182,7 @@ def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig, proj_ray_orig, r
     return(face_hit_pos)
 
 
-def TriangleLineIntersect(L, Vx, tol=1e-06):
+def triangle_line_intersect(L, Vx, tol=1e-06):
     """
     Computing the intersection of a line with a triangle
     Algorithm from http://geomalgorithms.com/a06-_intersect-2.html
