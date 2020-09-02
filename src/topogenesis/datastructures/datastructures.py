@@ -406,6 +406,9 @@ class cloud(np.ndarray):
         plot.add_points(pv.PolyData(self), color='#2499ff')
 
         return plot
+    
+    def to_csv(self, path, delimiter=","):
+        np.savetxt(path, self, delimiter=delimiter)
 
 
 class stencil(np.ndarray):
