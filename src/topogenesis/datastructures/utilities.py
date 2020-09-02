@@ -4,6 +4,7 @@ Cloud DataStructure
 """
 
 import numpy as np
+import pandas as pd
 import pyvista as pv
 import itertools
 import concurrent.futures
@@ -45,6 +46,26 @@ def cloud_from_csv(file_path, delimiter=','):
 
 
 def lattice_from_csv(file_path):
+    # read metadata
+    meta_df = pd.read_csv(file_path, nrows=3)
+
+    shape = np.array(meta_df['shape'])
+    unit = np.array(meta_df['unit'])
+    minbound = np.array(meta_df['minbound'])
+
+    # read lattice
+    lattice_df = pd.read_csv(file_path, skiprows=5)
+
+    # create the buffer
+    buffer = np.array(lattice_df['value']).reshape(shape)
+
+    # create the lattice
+    l = lattice([minbound, minbound + unit * (shape-1)], unit=unit,
+                dtype=bool,buffer=buffer)
+
+    return l
+
+def lattice_from_csv_old(file_path):
 
     # read the voxel 3-dimensional indices
     ind_flat = np.genfromtxt(file_path, delimiter=',',
