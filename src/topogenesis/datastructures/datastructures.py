@@ -275,6 +275,45 @@ class lattice(np.ndarray):
             })
         return vol_df
 
+    def apply_stencil(self, stencil):
+
+        # pad the volume with zero in every direction
+        self_padded = np.pad(self, (1, 1), mode='constant',
+                             constant_values=(0, 0))
+
+        # the id of voxels (0,1,2, ... n)
+        self_padded_inds = np.arange(
+            self_padded.size).reshape(self_padded.shape)
+
+        # claculating all the possible shifts to apply to the array
+        shifts = stencil.expand()
+
+        # gattering all the replacements in the collumns
+        replaced_columns = [
+            np.roll(self_padded_inds, shift, np.arange(3)).ravel() for shift in shifts]
+
+        # stacking the columns
+        cell_neighbors = np.stack(replaced_columns, axis=-1)
+
+        # replace neighbours by their value in volume
+        self_padded_flat = self_padded.ravel()
+        neighbor_values = self_padded_flat[cell_neighbors]
+
+        # apply the function to the neighbour values
+        applied = stencil.function(neighbor_values, axis=1)
+
+        # reshape the neighbour applied into the origial lattice shape
+        applied_3d = applied.reshape(self_padded.shape)
+
+        # trim the padded dimensions
+        applied_3d_trimed = applied_3d[1:-1, 1:-1, 1:-1]
+
+        # construct a lattice
+        applied_lattice = lattice(self.bounds, unit=self.unit)
+        applied_lattice[:, :, :] = applied_3d_trimed[:, :, :]
+
+        return applied_lattice
+
 
 class cloud(np.ndarray):
 
@@ -425,7 +464,7 @@ class cloud(np.ndarray):
 
 class stencil(np.ndarray):
 
-    def __new__(subtype, point_array, ntype="Custom", origin=np.array([0, 0, 0]), dtype=int, buffer=None, offset=0,
+    def __new__(subtype, point_array, ntype="Custom", origin=np.array([0, 0, 0]), function=None, dtype=int, buffer=None, offset=0,
                 strides=None, order=None):
 
         # extracting the shape from point_array
@@ -448,7 +487,8 @@ class stencil(np.ndarray):
         # set the  'bounds' attribute
         shape_arr = np.array(shape)
         obj.bounds = np.array([shape_arr * 0, shape_arr - 1]) - origin
-
+        # set the function attribute
+        obj.function = function
         # Finally, we must return the newly created object:
         return obj
 
@@ -480,6 +520,7 @@ class stencil(np.ndarray):
         self.bounds = getattr(obj, 'bounds', None)
         self.ntype = getattr(obj, 'ntype', None)
         self.origin = getattr(obj, 'origin', None)
+        self.function = getattr(obj, 'function', None)
 
         # We do not need to return anything
 
