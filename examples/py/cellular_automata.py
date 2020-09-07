@@ -8,11 +8,11 @@ s = tg.create_stencil("moore", 1)
 s.set_index([0, 0, 0], 0)
 
 # assign the sum function
-s.function = np.sum
+s.function = tg.sfunc.sum  # np.sum
 
 # initiate the lattice
-l = tg.lattice([[0, -2, -1], [0, 2, 1]], default_value=0)
-l[0, 1:4, 1] += 1
+l = tg.lattice([[0, -1, -1], [0, 1, 1]], default_value=0, dtype=int)
+l[0, :, 1] += 1
 
 # main iteration forloop
 for i in range(10):

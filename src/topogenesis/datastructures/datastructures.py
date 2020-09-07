@@ -122,6 +122,11 @@ class lattice(np.ndarray):
         # return as a point cloud
         return cloud(point_array, dtype=float)
 
+    @property
+    def indicies(self):
+        ind = np.arange(self.size).reshape(self.shape)
+        return to_lattice(ind.astype(int), self)
+
     def fast_vis(self, plot, show_outline=True, show_centroids=True):
 
         # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
@@ -308,11 +313,7 @@ class lattice(np.ndarray):
         # trim the padded dimensions
         applied_3d_trimed = applied_3d[1:-1, 1:-1, 1:-1]
 
-        # construct a lattice
-        applied_lattice = lattice(self.bounds, unit=self.unit)
-        applied_lattice[:, :, :] = applied_3d_trimed[:, :, :]
-
-        return applied_lattice
+        return to_lattice(applied_3d_trimed, self)
 
 
 class cloud(np.ndarray):
@@ -639,3 +640,10 @@ def create_stencil(type_str, steps, clip=None):
     else:
         raise ValueError(
             'non-valid neighborhood type for stencil creation')
+
+
+def to_lattice(a, l):
+    # construct a lattice
+    array_lattice = lattice(l.bounds, unit=l.unit, dtype=a.dtype)
+    array_lattice[:, :, :] = a[:, :, :]
+    return array_lattice
