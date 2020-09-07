@@ -279,12 +279,18 @@ class lattice(np.ndarray):
                 'value': vol_flat,
             })
         return vol_df
+    # TODO change the defualt padding value to np.nan. current problem is with datatypes other than float
+    def apply_stencil(self, stencil, border_condition="pad_outside", padding_value=0):
 
-    def apply_stencil(self, stencil):
+        if border_condition == "pad_outside":
+            # pad the volume with zero in every direction
+            self_padded = np.pad(self, (1, 1), mode='constant',
+                                 constant_values=(padding_value, padding_value))
+        elif border_condition == "pad_inside":
+            pass
 
-        # pad the volume with zero in every direction
-        self_padded = np.pad(self, (1, 1), mode='constant',
-                             constant_values=(0, 0))
+        elif border_condition == "roll":
+            pass
 
         # the id of voxels (0,1,2, ... n)
         self_padded_inds = np.arange(
