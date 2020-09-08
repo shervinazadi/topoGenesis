@@ -286,11 +286,12 @@ class lattice(np.ndarray):
             # pad the volume with zero in every direction
             self_padded = np.pad(self, (1, 1), mode='constant',
                                  constant_values=(padding_value, padding_value))
+
         elif border_condition == "pad_inside":
-            pass
+            raise NotImplementedError
 
         elif border_condition == "roll":
-            pass
+            self_padded = np.copy(self)
 
         # the id of voxels (0,1,2, ... n)
         self_padded_inds = np.arange(
@@ -316,8 +317,16 @@ class lattice(np.ndarray):
         # reshape the neighbour applied into the origial lattice shape
         applied_3d = applied.reshape(self_padded.shape)
 
-        # trim the padded dimensions
-        applied_3d_trimed = applied_3d[1:-1, 1:-1, 1:-1]
+        # reverse the padding procedure
+        if border_condition == "pad_outside":
+            # trim the padded dimensions
+            applied_3d_trimed = applied_3d[1:-1, 1:-1, 1:-1]
+
+        elif border_condition == "pad_inside":
+            raise NotImplementedError
+
+        elif border_condition == "roll":
+            applied_3d_trimed = applied_3d
 
         return to_lattice(applied_3d_trimed, self)
 
