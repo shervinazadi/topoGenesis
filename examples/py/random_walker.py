@@ -13,30 +13,37 @@ s.set_index([0, 0, 0], 0)
 s.set_index([1, 0, 0], 0)
 s.set_index([-1, 0, 0], 0)
 
-# assign the sum function
+# assign the random choice function
 s.function = tg.sfunc.random_choice
 
-# initiate the lattice
+# initiate the lattice 0x7x7
 l = tg.lattice([[0, -3, -3], [0, 3, 3]], default_value=0, dtype=int)
+
+# place the walker in the center of the lattice
 l[0, 3, 3] += 1
 
-# the id of voxels (0,1,2, ... n)
+# retrieve the indicies of cells (0,1,2, ... n)
 l_inds = l.indicies
 
 # main iteration forloop
-for i in range(50):
-    click.clear()
-    print(l, flush=True)
+for i in range(30):
 
-    # apply the stencil to the lattice
+    # clear the print console
+    click.clear()
+
+    # print the state of the lattice
+    print(l)
+
+    # apply the stencil (function) to the lattice
     random_neighbour = l_inds.apply_stencil(s, border_condition="roll")
 
-    # convert the new positions to lattice indexes
-    new_pos = np.array(np.unravel_index(random_neighbour[l == 1], l.shape))
+    # convert the current positions id and selected neighbour id to lattice indicies
+    old_pos = np.array(np.unravel_index(l_inds[l > 0], l.shape))
+    new_pos = np.array(np.unravel_index(random_neighbour[l > 0], l.shape))
 
     # apply the movements
-    l *= 0
-    l[new_pos[0], new_pos[1], new_pos[2]] = 1
+    l[old_pos[0], old_pos[1], old_pos[2]] -= 1
+    l[new_pos[0], new_pos[1], new_pos[2]] += 1
 
-    # sleep for 0.2 seconds
-    sleep(.2)
+    # wait for 0.3 seconds
+    sleep(.3)
