@@ -16,17 +16,54 @@ s.set_index([-1, 0, 0], 0)
 # assign the random choice function
 s.function = tg.sfunc.random_choice
 
+"""
+print(s)
+[[[0 0 0]
+  [0 0 0]
+  [0 0 0]]
+
+ [[0 1 0]
+  [1 0 1]
+  [0 1 0]]
+
+ [[0 0 0]
+  [0 0 0]
+  [0 0 0]]]
+"""
+
 # initiate the lattice 0x7x7
 l = tg.lattice([[0, -3, -3], [0, 3, 3]], default_value=0, dtype=int)
 
 # place the walker in the center of the lattice
 l[0, 3, 3] += 1
 
+"""
+print(l)
+[[[0 0 0 0 0 0 0]
+  [0 0 0 0 0 0 0]
+  [0 0 0 0 0 0 0]
+  [0 0 0 1 0 0 0]
+  [0 0 0 0 0 0 0]
+  [0 0 0 0 0 0 0]
+  [0 0 0 0 0 0 0]]]
+"""
+
 # retrieve the indicies of cells (0,1,2, ... n)
 l_inds = l.indicies
 
+"""
+print(l_inds)
+[[[ 0  1  2  3  4  5  6]
+  [ 7  8  9 10 11 12 13]
+  [14 15 16 17 18 19 20]
+  [21 22 23 24 25 26 27]
+  [28 29 30 31 32 33 34]
+  [35 36 37 38 39 40 41]
+  [42 43 44 45 46 47 48]]]
+"""
+
 # main iteration forloop
-for i in range(30):
+for i in range(20):
 
     # clear the print console
     click.clear()
