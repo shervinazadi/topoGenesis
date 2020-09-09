@@ -316,6 +316,71 @@ class lattice(np.ndarray):
 
         return to_lattice(applied_3d_trimed, self)
 
+    def arg_apply_stencil(self, arg_lattice, stencil, border_condition="pad_outside", padding_value=0):
+
+        if self.shape != arg_lattice.shape:
+            raise ValueError(
+                "Main lattice and argument lattice shape does not match")
+
+        if border_condition == "pad_outside":
+            # pad the volume with padding value in every direction
+            padded_arr = np.pad(self, (1, 1),
+                                mode='constant',
+                                constant_values=(padding_value, padding_value))
+            # convert to lattice
+            self_padded = to_lattice(padded_arr,
+                                     self.minbound - self.unit,
+                                     unit=self.unit)
+            # pad the argument lattice with padding value in every direction
+            padded_arg_arr = np.pad(arg_lattice, (1, 1),
+                                    mode='constant',
+                                    constant_values=(padding_value, padding_value))
+            # convert to lattice
+            arg_lattice_padded = to_lattice(padded_arg_arr,
+                                            self.minbound - self.unit,
+                                            unit=self.unit)
+
+        elif border_condition == "pad_inside":
+            raise NotImplementedError
+
+        elif border_condition == "roll":
+            self_padded = to_lattice(np.copy(self), self)
+            arg_lattice_padded = to_lattice(np.copy(arg_lattice), arg_lattice)
+
+        # find the neighbours based on the stencil
+        cell_neighbors = self_padded.find_neighbours(stencil)
+
+        # replace neighbours by their value in the main lattice
+        self_padded_flat = self_padded.ravel()
+        neighbor_values = self_padded_flat[cell_neighbors]
+
+        # apply the function to the neighbour values
+        applied = stencil.function(neighbor_values, axis=1)
+        row_ind = np.arange(applied.size)
+
+        # replace neighbours by their valu in the argument latice
+        arg_lattice_padded_flat = arg_lattice_padded.ravel()
+        arg_neighbor_values = arg_lattice_padded_flat[cell_neighbors]
+
+        # retrieve the values from the argument lattice
+        arg_applied = arg_neighbor_values[row_ind, applied]
+
+        # reshape the neighbour applied into the origial lattice shape
+        arg_applied_3d = arg_applied.reshape(self_padded.shape)
+
+        # reverse the padding procedure
+        if border_condition == "pad_outside":
+            # trim the padded dimensions
+            arg_applied_3d_trimed = arg_applied_3d[1:-1, 1:-1, 1:-1]
+
+        elif border_condition == "pad_inside":
+            raise NotImplementedError
+
+        elif border_condition == "roll":
+            arg_applied_3d_trimed = arg_applied_3d
+
+        return to_lattice(arg_applied_3d_trimed, self)
+
     def find_neighbours(self, stencil):
 
         # the id of voxels (0,1,2, ... n)

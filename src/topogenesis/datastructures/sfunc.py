@@ -12,6 +12,7 @@ file_directory = os.path.dirname(os.path.abspath(__file__))
 # directly using numpy functions
 sum = np.sum
 min = np.amin
+argmin = np.argmin
 
 # wrapping numpy functions to enable mapping
 
