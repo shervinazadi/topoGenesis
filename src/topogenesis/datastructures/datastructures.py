@@ -7,18 +7,9 @@ import numpy as np
 import pandas as pd
 import pyvista as pv
 import itertools
-import concurrent.futures
 import warnings
 import os
 
-__author__ = "Shervin Azadi, and Pirouz Nourian"
-__copyright__ = "???"
-__credits__ = ["Shervin Azadi", "Pirouz Nourian"]
-__license__ = "???"
-__version__ = "0.0.2"
-__maintainer__ = "Shervin Azadi"
-__email__ = "shervinazadi93@gmail.com"
-__status__ = "Dev"
 
 file_directory = os.path.dirname(os.path.abspath(__file__))
 
@@ -279,33 +270,28 @@ class lattice(np.ndarray):
                 'value': vol_flat,
             })
         return vol_df
+
     # TODO change the defualt padding value to np.nan. current problem is with datatypes other than float
     def apply_stencil(self, stencil, border_condition="pad_outside", padding_value=0):
 
         if border_condition == "pad_outside":
             # pad the volume with zero in every direction
-            self_padded = np.pad(self, (1, 1), mode='constant',
-                                 constant_values=(padding_value, padding_value))
+            padded_arr = np.pad(self, (1, 1),
+                                mode='constant',
+                                constant_values=(padding_value, padding_value))
+            # convert to lattice
+            self_padded = to_lattice(padded_arr,
+                                     self.minbound - self.unit,
+                                     unit=self.unit)
 
         elif border_condition == "pad_inside":
             raise NotImplementedError
 
         elif border_condition == "roll":
-            self_padded = np.copy(self)
+            self_padded = to_lattice(np.copy(self), self)
 
-        # the id of voxels (0,1,2, ... n)
-        self_padded_inds = np.arange(
-            self_padded.size).reshape(self_padded.shape)
-
-        # claculating all the possible shifts to apply to the array
-        shifts = stencil.expand()
-
-        # gattering all the replacements in the collumns
-        replaced_columns = [
-            np.roll(self_padded_inds, shift, np.arange(3)).ravel() for shift in shifts]
-
-        # stacking the columns
-        cell_neighbors = np.stack(replaced_columns, axis=-1)
+        # find the neighbours based on the stencil
+        cell_neighbors = self_padded.find_neighbours(stencil)
 
         # replace neighbours by their value in volume
         self_padded_flat = self_padded.ravel()
@@ -329,6 +315,23 @@ class lattice(np.ndarray):
             applied_3d_trimed = applied_3d
 
         return to_lattice(applied_3d_trimed, self)
+
+    def find_neighbours(self, stencil):
+
+        # the id of voxels (0,1,2, ... n)
+        self_ind = self.indicies
+
+        # claculating all the possible shifts to apply to the array
+        shifts = stencil.expand()
+
+        # gattering all the replacements in the collumns
+        replaced_columns = [
+            np.roll(self_ind, shift, np.arange(3)).ravel() for shift in shifts]
+
+        # stacking the columns
+        cell_neighbors = np.stack(replaced_columns, axis=-1)
+
+        return cell_neighbors
 
 
 class cloud(np.ndarray):
@@ -657,8 +660,22 @@ def create_stencil(type_str, steps, clip=None):
             'non-valid neighborhood type for stencil creation')
 
 
-def to_lattice(a, l):
+def to_lattice(a, minbound: np.ndarray, unit=1) -> lattice:
+
+    # check if the minbound is a lattice
+    if type(minbound) is lattice:
+        l = minbound
+        unit = l.unit
+        minbound = l.minbound
+
+    # check if minbound is an np array
+    elif type(minbound) is not np.ndarray:
+        minbound = np.array(minbound)
+
+    # compute the bounds based on the minbound
+    bounds = np.array([minbound, minbound + unit * (np.array(a.shape)) - 1])
+
     # construct a lattice
-    array_lattice = lattice(l.bounds, unit=l.unit, dtype=a.dtype)
+    array_lattice = lattice(bounds, unit=unit, dtype=a.dtype)
     array_lattice[:, :, :] = a[:, :, :]
     return array_lattice
