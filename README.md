@@ -5,6 +5,7 @@
 [![DOI](https://zenodo.org/badge/268286072.svg)](https://zenodo.org/badge/latestdoi/268286072)
 
 [topoGenesis](https://github.com/shervinazadi/topoGenesis) is an open-source python package that provides topological structures and functions for Generative Systems and Sciences for various application areas such as:
+
 - generative design in architecture and built environment
 - generative spatial simulations
 - 3D image processing
@@ -14,34 +15,35 @@
 ## Vision
 
 topoGenesis aims to utilize the vast functionalities of fields (mathematical objects) in generative systems and sciences. Therefore it seeks to:
+
 1. offer basic mathematical functionalities on field data models
 2. offer functionalities of computational topology on top of the field structures
-3. facilitate the conversion between mesh-based data models and field data models. 
+3. facilitate the conversion between mesh-based data models and field data models.
 4. facilitate field simulations, whether governed by differential equations, spectral models or based on computational models (ABM)
 5. construct a bridge between spatial data models and tensor data structures to facilitate the utilization of the latest artificial intelligence models
 
-## Structure 
+## Structure
 
-* Mesh to Field: Rasterization
-    * Point Cloud Regularization
-    * Line Network Voxelation
-    * Mesh Surface Voxelation
-    * Signed Distance Field
-* Field to Mesh: Isosurface
-    * Boolean Marching Cubes
-    * Marching Cubes
-    * Surface Nets
-* Local Computation
-    * Stencil / Kernels
-        * von Neumann neighbourhood
-        * Moore neighbourhood
-        * Cube neighbourhood
-        * Custom neighbourhoods
-    * Universal Functions & Mathematical Operators (Numerical)
-* Field Simulations (Vectorized)
-    * Dynamic Systems (based on Differential Equations)
-    * Agent-Based Modeling
-    * Cellular Automata
+- Mesh to Field: Rasterization
+  - Point Cloud Regularization
+  - Line Network Voxelation
+  - Mesh Surface Voxelation
+  - Signed Distance Field
+- Field to Mesh: Isosurface
+  - Boolean Marching Cubes
+  - Marching Cubes
+  - Surface Nets
+- Local Computation
+  - Stencil / Kernels
+    - von Neumann neighbourhood
+    - Moore neighbourhood
+    - Cube neighbourhood
+    - Custom neighbourhoods
+  - Universal Functions & Mathematical Operators (Numerical)
+- Field Simulations (Vectorized)
+  - Dynamic Systems (based on Differential Equations)
+  - Agent-Based Modeling
+  - Cellular Automata
 
 ## Installation
 
@@ -63,10 +65,9 @@ conda activate genesis
 conda install numpy
 ```
 
-4. go to the source directory of topogenesis and install it locally within your environment with a symlink:
+4. install topogenesis locally within your environment with a symlink:
 
 ```Shell Script
-cd topoGenesis/src
 python -m pip install -e .
 ```
 
