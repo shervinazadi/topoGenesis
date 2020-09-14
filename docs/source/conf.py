@@ -17,6 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
+import sphinx_glpi_theme
 project = 'topoGenesis'
 copyright = '2020, Shervin Azadi and Pirouz Nourian'
 author = 'Shervin Azadi and Pirouz Nourian'
@@ -31,6 +32,7 @@ release = '0.2'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx.ext.autodoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -47,7 +49,10 @@ exclude_patterns = []
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+
+html_theme = "glpi"
+
+html_theme_path = sphinx_glpi_theme.get_html_themes_path()
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
