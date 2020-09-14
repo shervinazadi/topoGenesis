@@ -47,10 +47,10 @@ topoGenesis aims to utilize the vast functionalities of fields (mathematical obj
 
 ## Installation
 
-1. create a virtual environment with Python 3.7.4 using conda
+1. create a virtual environment using conda
 
 ```Shell Script
-conda create --name genesis python=3.7.4
+conda create --name genesis
 ```
 
 2. activate the environment
@@ -59,10 +59,10 @@ conda create --name genesis python=3.7.4
 conda activate genesis
 ```
 
-3. install all dependencies:["numpy"]
+3. install all dependencies:["numpy", "pandas", "pyvista"]
 
 ```Shell Script
-conda install numpy
+conda install numpy pandas pyvista
 ```
 
 4. install topogenesis locally within your environment with a symlink:
