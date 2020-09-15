@@ -1,8 +1,8 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: osx-64
-itkwidgets=0.32.0=py38h32f6830_0
-numpy=1.19.1=py38h8ccc501_2
-pandas=1.1.2=py38h11c0d25_0
-python=3.8.5=hfc71d35_7_cpython
-pyvista=0.26.0=py_0
+itkwidgets>=0.32.0
+numpy>=1.19.1
+pandas>=1.1.2
+python>=3.8.5
+pyvista>=0.26.0
