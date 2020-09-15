@@ -1,6 +1,6 @@
 
 """
-Cloud DataStructure
+topoGenesis DataStructure
 """
 
 import numpy as np
@@ -25,7 +25,7 @@ class lattice(np.ndarray):
         maxbound = np.rint(bounds[1] / unit).astype(int)
         bounds = np.array([minbound, maxbound])*unit
 
-        # unit nparray
+        # unit np array
         unit = np.array(unit)
 
         # if the unit vector size is 1, tile it with the size of minimum vector
@@ -39,14 +39,11 @@ class lattice(np.ndarray):
         # calculating shape based on bounds and unit
         shape = 1 + maxbound - minbound
 
-        # set defualt value
+        # set default value
         if default_value != None:
             buffer = np.tile(default_value, shape.flatten())
 
-        # Create the ndarray instance of our type, given the usual
-        # ndarray input arguments.  This will call the standard
-        # ndarray constructor, but return an object of our type.
-        # It also triggers a call to lattice.__array_finalize__
+        # Create the ndarray instance of our type
         obj = super(lattice, subtype).__new__(subtype, shape, dtype,
                                               buffer, offset, strides,
                                               order)
@@ -62,63 +59,84 @@ class lattice(np.ndarray):
         return obj
 
     def __array_finalize__(self, obj):
-        # ``self`` is a new object resulting from
-        # ndarray.__new__(lattice, ...), therefore it only has
-        # attributes that the ndarray.__new__ constructor gave it -
-        # i.e. those of a standard ndarray.
-        #
-        # We could have got to the ndarray.__new__ call in 3 ways:
-        # From an explicit constructor - e.g. lattice():
-        #    obj is None
-        #    (we're in the middle of the lattice.__new__
-        #    constructor, and self.bounds will be set when we return to
-        #    lattice.__new__)
+
         if obj is None:
             return
-        # From view casting - e.g arr.view(lattice):
-        #    obj is arr
-        #    (type(obj) can be lattice)
-        # From new-from-template - e.g lattice[:3]
-        #    type(obj) is lattice
-        #
-        # Note that it is here, rather than in the __new__ method,
-        # that we set the default value for 'bounds', because this
-        # method sees all creation of default objects - with the
-        # lattice.__new__ constructor, but also with
-        # arr.view(lattice).
+
+        # adding the attributes to self
         self.bounds = getattr(obj, 'bounds', None)
         self.bounds = getattr(obj, 'bounds', None)
         self.unit = getattr(obj, 'unit', None)
         self.connectivity = getattr(obj, 'connectivity', None)
-        # We do not need to return anything
+        # TODO need to add the origin atribute
 
     @property
     def minbound(self):
+        """ Real minimum bound of the lattice
+
+        :return: real minimum bound
+        :rtype: numpy array
+        """
         return self.bounds[0]
 
     @property
     def maxbound(self):
+        """ Real maximum bound of the lattice
+
+        :return: real maximum bound
+        :rtype: [numpy array]
+        """
         return self.bounds[1]
 
     @property
     def centroids(self):
-        # extract the indicies of the True values # with sparse matrix we dont need to search
-        point_array = np.argwhere(self == True)
+        """ Extracts the centroid of cells that have a positive or True value and returns them as a point cloud
+
+        :return: a point cloud representing the centroids of the lattice cells
+        :rtype: topogenesis.Cloud
+        """
+
+        # extract the indices of the True values # with sparse matrix we don't need to search
+        point_array = np.argwhere(self > 0.0)
         # convert to float
         point_array = point_array.astype(float)
-        # multply by unit
+        # scale by unit
         point_array *= self.unit
-        # move to minimum
+        # translate by minimum
         point_array += self.minbound
         # return as a point cloud
         return cloud(point_array, dtype=float)
 
     @property
-    def indicies(self):
+    def indices(self):
+        """ Creates one-dimensional integer indices for cells in the lattice
+
+        :return: integer lattice of indices 
+        :rtype: topogenesis.Lattice
+        """
+
         ind = np.arange(self.size).reshape(self.shape)
         return to_lattice(ind.astype(int), self)
 
     def fast_vis(self, plot, show_outline=True, show_centroids=True):
+        """ Adds the basic lattice features to a pyvista ploter and returns it. 
+        It is mainly used to rapidly visualize the content of the lattice 
+        for visual confirmation
+
+        :param plot: a pyvista ploter
+        :type plot: pyvista.Plotter
+        :param show_outline: If `True`, adds the bounding box of the latice to the plot, defaults to True
+        :type show_outline: bool, optional
+        :param show_centroids: If `True`, adds the centroid of cells to the plot, defaults to True
+        :type show_centroids: bool, optional
+        :return: pyvista ploter containing lattice features such as cells, bounding box, cell centroids
+        :rtype: pyvista.Plotter
+
+        .. code-block:: python
+
+            p = pyvista.Plotter()
+            lattice.fast_vis(p)
+        """
 
         # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
         grid = pv.UniformGrid()
@@ -141,13 +159,32 @@ class lattice(np.ndarray):
             plot.add_mesh(grid.outline(), color="grey", label="Domain")
 
         if show_centroids:
-            # adding the voxel centeroids: red
+            # adding the voxel centroids: red
             plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5,
-                          render_points_as_spheres=True, label="Cell Centroidss")
+                          render_points_as_spheres=True, label="Cell Centroids")
 
         return plot
 
     def fast_notebook_vis(self, plot, show_outline=True, show_centroids=True):
+        """ Adds the basic lattice features to a pyvista ITK plotter and returns it. 
+        ITK plotters are specifically used in notebooks to plot the geometry inside 
+        the notebook environment It is mainly used to rapidly visualize the content 
+        of the lattice for visual confirmation
+
+        :param plot: a pyvista ITK plotter
+        :type plot: pyvista.PlotterITK
+        :param show_outline: If `True`, adds the bounding box of the latice to the plot, defaults to True
+        :type show_outline: bool, optional
+        :param show_centroids: If `True`, adds the centroid of cells to the plot, defaults to True
+        :type show_centroids: bool, optional
+        :return: pyvista ITK plotter containing lattice features such as cells, bounding box, cell centroids
+        :rtype: pyvista.PlotterITK
+
+        .. code-block:: python
+
+            p = pyvista.PlotterITK()
+            lattice.fast_notebook_vis(p)
+        """
 
         # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
         grid = pv.UniformGrid()
@@ -171,38 +208,29 @@ class lattice(np.ndarray):
             # plot.add_mesh(grid.outline(), color="grey", label="Domain")
 
         if show_centroids:
-            # adding the voxel centeroids: red
+            # adding the voxel centroids: red
             plot.add_points(pv.PolyData(self.centroids), color='#ff244c')
-            # plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5, render_points_as_spheres=True, label="Cell Centroidss")
+            # plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5, render_points_as_spheres=True, label="Cell Centroids")
 
         return plot
 
     def boolean_marching_cubes(self):
+        """ This is a polygonization method. It converts the lattice to a boolean lattice and runs a boolean marching cube on the lattice. 
+
+        :return: an integer lattice that contains the tile-id at each cell
+        :rtype: topogenesis.Lattice
+        """
 
         # construct the boolean_marching_cubes stencil
         mc_stencil = create_stencil("boolean_marching_cube", 1)
 
-        # getting shifts by expanding the stencil in the Fortran Order
-        shifts = mc_stencil.expand('F')
-
-        # pad the volume with zero in every direction
-        # TODO make this an option instead of default
-        volume = np.pad(self, (1, 1), mode='constant', constant_values=(0, 0))
-
-        # the id of voxels (0,1,2, ... n)
-        volume_inds = np.arange(volume.size).reshape(volume.shape)
-
-        # gattering all the replacements in the collumns
-        replaced_columns = [
-            np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
-
-        # stacking the columns
-        cell_corners = np.stack(replaced_columns, axis=-1)
+        # retrieve the value of the neighbours
+        cell_corners = self.find_neighbours(mc_stencil, order="F")
 
         # converting volume value (TODO: this needs to become a method of its own)
-        volume_flat = volume.ravel()
-        volume_flat[volume_flat > 0.5] = 1
-        volume_flat[volume_flat < 0.5] = 0
+        volume_flat = self.ravel()
+        volume_flat[volume_flat > 0.0] = 1
+        volume_flat[volume_flat <= 0.0] = 0
 
         # replace neighbours by their value in volume
         neighbor_values = volume_flat[cell_corners]
@@ -213,18 +241,15 @@ class lattice(np.ndarray):
 
         # multiply the corner with the power of two, sum them, and reshape to the original volume shape
         tile_id = np.sum(legend * neighbor_values,
-                         axis=1).reshape(volume.shape)
+                         axis=1).reshape(self.shape)
 
         # drop the last column, row and page (since cube-grid is 1 less than the voxel grid in every dimension)
-        # TODO consider that removing padding would eliminate the need for this line
+        # TODO consider that by implementing the origin attribute in lattice this may have to change
         cube_grid = tile_id[:-1, :-1, :-1]
 
-        # initializing the lattice
-        cube_lattice = lattice([self.minbound, self.maxbound + self.unit],
-                               unit=self.unit, dtype=np.uint8, buffer=cube_grid, default_value=False)
-
-        # set the values that are bigger than 0 (transfering values)
-        cube_lattice[cube_grid > 0] = cube_grid[cube_grid > 0]
+        # convert the array to lattice
+        cube_lattice = to_lattice(
+            cube_grid, minbound=self.minbound, unit=self.unit)
 
         return cube_lattice
 
@@ -232,10 +257,15 @@ class lattice(np.ndarray):
         raise NotImplementedError
 
     def to_csv(self, filepath):
+        """ This method saves the lattice to a csv file
+
+        :param filepath: path to the csv file
+        :type filepath: str
+        """
         # volume to panda dataframe
         vol_df = self.to_panadas()
 
-        # specifying metadata and transposig it
+        # specifying metadata and transposing it
         metadata = pd.DataFrame({
             'minbound': self.minbound,
             'shape': np.array(self.shape),
@@ -252,7 +282,12 @@ class lattice(np.ndarray):
             vol_df.to_csv(df_out, index=False, float_format='%g')
 
     def to_panadas(self):
-        # get the indicies of the voxels
+        """ This methods returns a pandas dataframe containing the lattice information with integer indices and value of the cell as columns.
+
+        :return: lattice represented in pandas dataframe
+        :rtype: pandas.Dataframe
+        """
+        # get the indices of the voxels
         vol_3d_ind = np.indices(self.shape)
 
         # flatten except the last dimension
@@ -271,8 +306,20 @@ class lattice(np.ndarray):
             })
         return vol_df
 
-    # TODO change the defualt padding value to np.nan. current problem is with datatypes other than float
+    # TODO change the default padding value to np.nan. current problem is with datatypes other than float
     def apply_stencil(self, stencil, border_condition="pad_outside", padding_value=0):
+        """ This method applies the function of a given stencil on the lattice and returns the result in a new lattice.
+
+        :param stencil: the stencil to be applied on the lattice
+        :type stencil: topogenesis.Stencil
+        :param border_condition: specifies how the border condition should be treated. The options are {"pad_outside", "pad_inside", "roll"}. "pad_outside" will offset the latice in every direction by one step, and fill the new cells with the given `padding_value` and procedes to performing the computation; the resultant lattice in this case has the same shape as the initial latice. "pad_inside" will perform the computation on the lattice, offsets inside by one cell from each side and returns the remainder cells; the resultant lattice is 2 cell smaller in each dimension than the original lattice. "roll" will assume that the end of each dimension is connected to the begining of it and interprets the connectivity of the lattice with a rolling approach; the resultant latice has the same shape is the original lattice. defaults to "pad_outside"
+        :type border_condition: str, optional
+        :param padding_value: value used for padding in case the `border_condition` is set to "pad_outside", defaults to 0
+        :type padding_value: same type as the lattice, optional
+        :raises NotImplementedError: "pad_inside" is not implemented yet
+        :return: a new lattice containing the result of the application of the stencil
+        :rtype: topogenesis.Lattice
+        """
 
         if border_condition == "pad_outside":
             # pad the volume with zero in every direction
@@ -300,23 +347,37 @@ class lattice(np.ndarray):
         # apply the function to the neighbour values
         applied = stencil.function(neighbor_values, axis=1)
 
-        # reshape the neighbour applied into the origial lattice shape
+        # reshape the neighbour applied into the original lattice shape
         applied_3d = applied.reshape(self_padded.shape)
 
         # reverse the padding procedure
         if border_condition == "pad_outside":
             # trim the padded dimensions
-            applied_3d_trimed = applied_3d[1:-1, 1:-1, 1:-1]
+            applied_3d_trimmed = applied_3d[1:-1, 1:-1, 1:-1]
 
         elif border_condition == "pad_inside":
             raise NotImplementedError
 
         elif border_condition == "roll":
-            applied_3d_trimed = applied_3d
+            applied_3d_trimmed = applied_3d
 
-        return to_lattice(applied_3d_trimed, self)
+        return to_lattice(applied_3d_trimmed, self)
 
     def arg_apply_stencil(self, arg_lattice, stencil, border_condition="pad_outside", padding_value=0):
+        """ Applies the function (should be argument function) of the stencil on the original lattice, extracts the value of the same cell of the argument lattice, fills a new latice and returns it. If the argument lattice contains one-dimensional ordering of the original lattice, this would function as an argument function. 
+
+        :param arg_lattice: the argument lattice. The values in this lattice will be extracted by the argument function and used to fill the new lattice
+        :type arg_lattice: topogenesis.Lattice
+        :param stencil: the stencil to be applied on the lattice. This stencil should contain an "argument function"
+        :type stencil: topogenesis.Stencil
+        :param border_condition: specifies how the border condition should be treated. The options are {"pad_outside", "pad_inside", "roll"}. "pad_outside" will offset the latice in every direction by one step, and fill the new cells with the given `padding_value` and procedes to performing the computation; the resultant lattice in this case has the same shape as the initial latice. "pad_inside" will perform the computation on the lattice, offsets inside by one cell from each side and returns the remainder cells; the resultant lattice is 2 cell smaller in each dimension than the original lattice. "roll" will assume that the end of each dimension is connected to the begining of it and interprets the connectivity of the lattice with a rolling approach; the resultant latice has the same shape is the original lattice. defaults to "pad_outside"
+        :type border_condition: str, optional
+        :param padding_value: value used for padding in case the `border_condition` is set to "pad_outside", defaults to 0
+        :type padding_value: same type as the lattice, optional
+        :raises NotImplementedError: "pad_inside" is not implemented yet
+        :return: a new lattice containing the result of the application of the stencil
+        :rtype: topogenesis.Lattice
+        """
 
         if self.shape != arg_lattice.shape:
             raise ValueError(
@@ -358,38 +419,46 @@ class lattice(np.ndarray):
         applied = stencil.function(neighbor_values, axis=1)
         row_ind = np.arange(applied.size)
 
-        # replace neighbours by their valu in the argument latice
+        # replace neighbours by their value in the argument latice
         arg_lattice_padded_flat = arg_lattice_padded.ravel()
         arg_neighbor_values = arg_lattice_padded_flat[cell_neighbors]
 
         # retrieve the values from the argument lattice
         arg_applied = arg_neighbor_values[row_ind, applied]
 
-        # reshape the neighbour applied into the origial lattice shape
+        # reshape the neighbour applied into the original lattice shape
         arg_applied_3d = arg_applied.reshape(self_padded.shape)
 
         # reverse the padding procedure
         if border_condition == "pad_outside":
             # trim the padded dimensions
-            arg_applied_3d_trimed = arg_applied_3d[1:-1, 1:-1, 1:-1]
+            arg_applied_3d_trimmed = arg_applied_3d[1:-1, 1:-1, 1:-1]
 
         elif border_condition == "pad_inside":
             raise NotImplementedError
 
         elif border_condition == "roll":
-            arg_applied_3d_trimed = arg_applied_3d
+            arg_applied_3d_trimmed = arg_applied_3d
 
-        return to_lattice(arg_applied_3d_trimed, self)
+        return to_lattice(arg_applied_3d_trimmed, self)
 
-    def find_neighbours(self, stencil):
+    def find_neighbours(self, stencil, order="dist"):
+        """ Given an stencil, this method will return the neighbours of the cell with regard to the stencil specification in a numpy 2D array with each row corresponding to one cell in lattice.
 
+        :param stencil: Stencil that describes the neighbourhood
+        :type stencil: topogenesis.Stencil
+        :param order: the order of neighbours is one of {"dist", "C", "F"}. 'dist' sorts the neighbours based on the distance from origin cell, ‘C’ sorts in row-major (C-style) order, and ‘F’ sorts in column-major (Fortran- style) order. defaults to "dist"
+        :type order: str, optional
+        :return: 2D array describing the neighbours of each cell in the row
+        :rtype: numpy.ndarray
+        """
         # the id of voxels (0,1,2, ... n)
-        self_ind = self.indicies
+        self_ind = self.indices
 
-        # claculating all the possible shifts to apply to the array
-        shifts = stencil.expand()
+        # calculating all the possible shifts to apply to the array
+        shifts = stencil.expand(order)
 
-        # gattering all the replacements in the collumns
+        # gattering all the replacements in the columns
         replaced_columns = [
             np.roll(self_ind, shift, np.arange(3)).ravel() for shift in shifts]
 
@@ -460,25 +529,12 @@ class cloud(np.ndarray):
         return self.bounds[1]
 
     def voxelate(self, unit, **kwargs):
-        """[summary]
 
-        Arguments:
-            unit {[float or array of floats]} -- [the unit separation between cells of lattice]
-
-        Keyword Arguments:
-            closed {[Boolean]} -- [False by default. If the cell intervals are closed intervals or not.]
-
-        Raises:
-            ValueError: [unit needs to be either a float or an array of floats that has the same dimension of the points in the point cloud]
-
-        Returns:
-            [lattice] -- [a boolian latice representing the rasterization of point cloud]
-        """
         ####################################################
         # INPUTS
         ####################################################
         unit = np.array(unit)
-        if unit.size != 1 and unit.size != self.minbound.shape:
+        if unit.size != 1 and unit.size != self.minbound.size:
             raise ValueError(
                 'the length of unit array needs to be either 1 or equal to the dimension of point cloud')
         elif unit.size == 1:
@@ -505,14 +561,14 @@ class cloud(np.ndarray):
         # removing repetitions
         unique_vox_ind = np.unique(vox_ind, axis=0).astype(int)
 
-        # mapping the voxel indicies to real space
+        # mapping the voxel indices to real space
         reg_pnt = unique_vox_ind * unit
 
         # initializing the volume
         l = lattice([self.minbound, self.maxbound], unit=unit,
                     dtype=bool, default_value=False)
 
-        # mapp the indicies to start from zero
+        # map the indices to start from zero
         mapped_ind = unique_vox_ind - np.rint(l.bounds[0]/l.unit).astype(int)
 
         # setting the occupied voxels to True
@@ -626,23 +682,29 @@ class stencil(np.ndarray):
     def maxbound(self):
         return self.bounds[1]
 
-    def expand(self, sort="dist"):
+    def expand(self, order="dist"):
         # list the locations
         locations = self.origin - np.argwhere(self)
 
-        # check the sorting method
+        # check the ordering method
 
-        if sort == "dist":  # Sorted Based on the distance from origin
+        # 'dist' means to sort based on the distance from origin
+        if order == "dist":
             # calculating the distance of each neighbour
             sums = np.abs(locations).sum(axis=1)
             # sorting to identify the main cell
-            order = np.argsort(sums)
+            ordered = np.argsort(sums)
 
-        elif sort == "F":  # Fortran Sort, used for Boolean Marching Cubes
-            order = np.arange(self.size).reshape(self.shape).flatten('F')
+        # ‘F’ means to sort in column-major (Fortran- style) order
+        elif order == "F":
+            ordered = np.arange(self.size).reshape(self.shape).flatten('F')
+
+        # ‘C’ means to sort in row-major (C-style) order
+        elif order == "C":
+            ordered = np.arange(self.size).reshape(self.shape).flatten('C')
 
         # sort and return
-        return locations[order].astype(int)
+        return locations[ordered].astype(int)
 
     def set_index(self, index, value):
         ind = np.array(index) + self.origin
@@ -659,12 +721,12 @@ def create_stencil(type_str, steps, clip=None):
     if type_str == "von_neumann":
         # https://en.wikipedia.org/wiki/Von_Neumann_neighborhood
 
-        # claculating all the possible shifts to apply to the array
+        # computing all the possible shifts to apply to the array
         shifts = np.array(list(itertools.product(
             list(range(-clip, clip+1)), repeat=3)))
 
         # the number of steps that the neighbour is appart from
-        # the cell (setp=1 : 6 neighbour, step=2 : 18 neighbours,
+        # the cell (step=1 : 6 neighbour, step=2 : 18 neighbours,
         # step=3 : 26 neighbours)
         shift_steps = np.sum(np.absolute(shifts), axis=1)
 
@@ -673,11 +735,11 @@ def create_stencil(type_str, steps, clip=None):
 
         # select the valid indices from shifts variable,
         # transpose them to get
-        # separate indicies in rows, add the number of
+        # separate indices in rows, add the number of
         # steps to make this an index
         locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
-        # inilize the stencil
+        # initialize the stencil
         s = np.zeros((clip*2+1, clip*2+1, clip*2+1)).astype(int)
 
         # fill in the stencil
@@ -690,7 +752,7 @@ def create_stencil(type_str, steps, clip=None):
     elif type_str == "moore":
         # https://en.wikipedia.org/wiki/Moore_neighborhood
 
-        # claculating all the possible shifts to apply to the array
+        # computing all the possible shifts to apply to the array
         shifts = np.array(list(itertools.product(
             list(range(-clip, clip+1)), repeat=3)))
 
@@ -701,11 +763,11 @@ def create_stencil(type_str, steps, clip=None):
         chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
 
         # select the valid indices from shifts variable,
-        # transpose them to get separate indicies in rows,
+        # transpose them to get separate indices in rows,
         # add the number of steps to make this an index
         locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
-        # inilize the stencil
+        # initialize the stencil
         s = np.zeros((clip*2+1, clip*2+1, clip*2+1)).astype(int)
 
         # fill in the stencil
@@ -715,7 +777,7 @@ def create_stencil(type_str, steps, clip=None):
 
     elif type_str == "boolean_marching_cube":
 
-        # inilize the stencil
+        # initialize the stencil
         s = np.ones((2, 2, 2)).astype(int)
 
         return stencil(s, ntype=type_str, origin=np.array([0, 0, 0]))
@@ -738,7 +800,7 @@ def to_lattice(a, minbound: np.ndarray, unit=1) -> lattice:
         minbound = np.array(minbound)
 
     # compute the bounds based on the minbound
-    bounds = np.array([minbound, minbound + unit * (np.array(a.shape)) - 1])
+    bounds = np.array([minbound, minbound + unit * (np.array(a.shape) - 1)])
 
     # construct a lattice
     array_lattice = lattice(bounds, unit=unit, dtype=a.dtype)
