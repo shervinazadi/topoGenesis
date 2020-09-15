@@ -547,13 +547,16 @@ class cloud(np.ndarray):
         ####################################################
 
         if closed:
-            # retrieve the identity matrix as a list of main axes
-            axes = np.identity(unit.size).astype(int)
             # R3 to Z3 : finding the closest voxel to each point
             point_scaled = self / unit
             # shift the hit points in each 2-dimension (n in 1-axes) backward and formard (s in [-1,1]) and rint all the possibilities
-            vox_ind = [np.rint(point_scaled + unit * n * s * 0.001)
-                       for n in (1-axes) for s in [-1, 1]]
+            shifts = np.array(list(itertools.product([-1, 0, 1], repeat=3)))
+            shifts_steps = np.sum(np.absolute(shifts), axis=1)
+            chosen_shift_ind = np.argwhere(shifts_steps == 3).ravel()
+            sel_shifts = shifts[chosen_shift_ind]
+
+            vox_ind = [np.rint(point_scaled + unit * s * 0.00001)
+                       for s in sel_shifts]
             vox_ind = np.vstack(vox_ind)
         else:
             vox_ind = np.rint(self / unit).astype(int)
@@ -565,11 +568,11 @@ class cloud(np.ndarray):
         reg_pnt = unique_vox_ind * unit
 
         # initializing the volume
-        l = lattice([self.minbound, self.maxbound], unit=unit,
+        l = lattice([self.minbound - unit, self.maxbound + unit], unit=unit,
                     dtype=bool, default_value=False)
 
         # map the indices to start from zero
-        mapped_ind = unique_vox_ind - np.rint(l.bounds[0]/l.unit).astype(int)
+        mapped_ind = unique_vox_ind - np.rint(l.minbound/l.unit).astype(int)
 
         # setting the occupied voxels to True
         l[mapped_ind[:, 0], mapped_ind[:, 1], mapped_ind[:, 2]] = True
