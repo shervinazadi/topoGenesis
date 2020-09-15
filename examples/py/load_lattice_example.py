@@ -5,7 +5,7 @@ import sys
 np.set_printoptions(threshold=sys.maxsize)
 # in this example we need to:
 # 1. load the bunny volume into a lattice
-bunny_lattice = tg.lattice_from_csv('Examples/SampleData/bunny_volume.csv')
+bunny_lattice = tg.lattice_from_csv('data/bunny_volume.csv')
 
 # 2. define a stencil (methods implemented)
 stencil = tg.create_stencil("von_neumann", 1, 1)
@@ -16,6 +16,6 @@ stencil = tg.create_stencil("von_neumann", 1, 1)
 # print(locs)
 # print(type(locs))
 
-# 3. derive the connectivity graph of the rasterized buny with the help of stencil (graph constructor needs to be implemented)
+# 3. derive the connectivity graph of the rasterized bunny with the help of stencil (graph constructor needs to be implemented)
 neighs = tg.find_neighbours(bunny_lattice, stencil)
 print(neighs)

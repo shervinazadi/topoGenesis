@@ -2,6 +2,7 @@ import topogenesis as tg
 import numpy as np
 import click            # for cleaning the command line
 from time import sleep  # for delaying between iterations
+np.random.seed(0)
 
 # create a step one moore neighbourhood
 s = tg.create_stencil("von_neumann", 1)

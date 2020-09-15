@@ -24,20 +24,21 @@ __status__ = "Dev"
 vs = 0.01
 unit = np.array([vs, vs, vs])
 tol = 1e-09
-mesh_path = os.path.relpath('Examples/SampleData/bunny_lowpoly.obj')
-mesh = tg.load_mesh(mesh_path)
+mesh_path = os.path.relpath('data/bunny_lowpoly.obj')
+mesh = tg.geometry.load_mesh(mesh_path)
 
 ####################################################
 # Mesh Sample
 ####################################################
 
-sample_cloud, ray_origins = tg.mesh_sampling(mesh, unit, multi_core_process=False, return_ray_origin = True, tol=tol)
+sample_cloud, ray_origins = tg.geometry.mesh_sampling(
+    mesh, unit, multi_core_process=False, return_ray_origin=True, tol=tol)
 
 ####################################################
 # Voxelation
 ####################################################
 
-lattice = sample_cloud.regularize(unit, closed=True)
+lattice = sample_cloud.voxelate(unit, closed=True)
 
 ####################################################
 # Visualization : PyVista
@@ -57,10 +58,12 @@ lattice.fast_vis(p)
 
 # adding the base mesh: light blue
 mesh = pv.read(mesh_path)
-p.add_mesh(mesh, show_edges=True, color='#abd8ff', opacity=0.4, label="Base Mesh")
+p.add_mesh(mesh, show_edges=True, color='#abd8ff',
+           opacity=0.4, label="Base Mesh")
 
 # adding the ray origins: dark blue
-p.add_mesh(pv.PolyData(ray_origins), color='#004887', point_size=4, render_points_as_spheres=True, label="Ray Origins")
+p.add_mesh(pv.PolyData(ray_origins), color='#004887', point_size=4,
+           render_points_as_spheres=True, label="Ray Origins")
 
 # adding the legend
 p.add_legend(bcolor=[0.9, 0.9, .9], border=True, size=[0.1, 0.1])
