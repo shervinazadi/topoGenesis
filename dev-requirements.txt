@@ -1,0 +1,19 @@
+# This file may be used to create an environment using:
+# $ conda create --name <env> --file <this file>
+# platform: osx-64
+click=7.1.2=pyh9f0ad1d_0
+compas=0.16.2=py38h32f6830_0
+coverage=5.3=py38h4d0b108_0
+docutils=0.16=py38h32f6830_1
+itkwidgets=0.32.0=py38h32f6830_0
+networkx=2.5=py_0
+numpy=1.19.1=py38h8ccc501_2
+pandas=1.1.2=py38h11c0d25_0
+pytest=6.0.2=py38h32f6830_0
+pytest-cov=2.10.1=pyh9f0ad1d_0
+python=3.8.5=hfc71d35_7_cpython
+pyvista=0.26.0=py_0
+scipy=1.5.2=py38h1402333_0
+setuptools=49.6.0=py38h32f6830_0
+sphinx=3.2.1=py_0
+sphinx-glpi-theme=0.3=pypi_0
