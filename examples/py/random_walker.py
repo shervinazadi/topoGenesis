@@ -48,8 +48,8 @@ print(l)
   [0 0 0 0 0 0 0]]]
 """
 
-# retrieve the indicies of cells (0,1,2, ... n)
-l_inds = l.indicies
+# retrieve the indices of cells (0,1,2, ... n)
+l_inds = l.indices
 
 """
 print(l_inds)
@@ -74,7 +74,7 @@ for i in range(20):
     # apply the stencil (function) to the lattice
     random_neighbour = l_inds.apply_stencil(s, border_condition="roll")
 
-    # convert the current positions id and selected neighbour id to lattice indicies
+    # convert the current positions id and selected neighbour id to lattice indices
     old_pos = np.array(np.unravel_index(l_inds[l > 0], l.shape))
     new_pos = np.array(np.unravel_index(random_neighbour[l > 0], l.shape))
 

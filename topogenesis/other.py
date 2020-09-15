@@ -11,6 +11,7 @@ import compas
 from compas.datastructures import Mesh
 import concurrent.futures
 import warnings
+from topogenesis.data import find_neighbours
 
 __author__ = "Shervin Azadi, and Pirouz Nourian"
 __copyright__ = "???"
@@ -34,7 +35,7 @@ def connectivity_graph(vol, steps):
     # Creating the graph
     ####################################################
 
-    # the code in this section is a vectorised equivalent of:
+    # the code in this section is a vectorized equivalent of:
     """
     edges = []
     for cell_neigh in cell_neighbors:
@@ -47,7 +48,7 @@ def connectivity_graph(vol, steps):
     # removing the index of the cell itself
     cell_only_neighs = cell_neighbors[:, 1:]
 
-    # tile the first collumn (cell id) with the size of the number of the neighs
+    # tile the first column (cell id) with the size of the number of the neighs
     cell_only_neighs_rind = np.tile(
         cell_neighbors[:, 0].reshape(-1, 1), (1, cell_only_neighs.shape[1]))
 
@@ -94,7 +95,7 @@ def pnts_to_csv(pnts, filepath, **kwargs):
 
 
 def vol_to_panadas(vol):
-    # get the indicies of the voxels
+    # get the indices of the voxels
     vol_3d_ind = np.indices(vol.shape)
 
     # flatten except the last dimension
@@ -132,7 +133,7 @@ def vol_to_csv(vol, filepath, **kwargs):
 
 
 def CellularAutomata(data):
-    
+
     # convert string to json
     if isinstance(data, str):
         data = json.loads(data)
@@ -155,10 +156,10 @@ def CellularAutomata(data):
     # the id of voxels (0,1,2, ... n)
     volume_inds = np.arange(volume.size).reshape(volume.shape)
 
-    # claculating all the possible shifts to apply to the array
+    # computing all the possible shifts to apply to the array
     shifts = np.array(list(itertools.product([0, -1, 1], repeat=3)))
 
-    # gattering all the replacements in the collumns
+    # gattering all the replacements in the columns
     replaced_columns = [
         np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
 
@@ -182,14 +183,14 @@ def CellularAutomata(data):
     volume_flat[(neighbor_sum >= 3) * (neighbor_sum <= 4)] = 1
 
     # on-cells 1D-index
-    oncells_1d_ind = np.argwhere(volume_flat == 1).ravel()
+    on_cells_1d_ind = np.argwhere(volume_flat == 1).ravel()
 
     # unravel the indices to 3D-index
-    oncells_3d_ind = np.stack(np.unravel_index(
-        oncells_1d_ind, volume.shape), axis=-1)
+    on_cells_3d_ind = np.stack(np.unravel_index(
+        on_cells_1d_ind, volume.shape), axis=-1)
 
-    # map back the indicies (add initial minimum and subtract 1 for the padded layer)
-    new_voxel_positions = oncells_3d_ind + minbound - 1
+    # map back the indices (add initial minimum and subtract 1 for the padded layer)
+    new_voxel_positions = on_cells_3d_ind + minbound - 1
 
     # package the results
     result = {
@@ -204,7 +205,7 @@ def CellularAutomata(data):
 
 
 def RandomWalkingAgents(data):
-    
+
     # convert string to json
     if isinstance(data, str):
         data = json.loads(data)
@@ -229,17 +230,18 @@ def RandomWalkingAgents(data):
 
     # shifts to check: self + 6 neighbours of each voxel
     shifts = np.array([
-        [ 0, 0, 0],  # self
-        [ 1, 0, 0],  # left
+        [0, 0, 0],  # self
+        [1, 0, 0],  # left
         [-1, 0, 0],  # right
-        [ 0, 1, 0],  # up
-        [ 0,-1, 0],  # down
-        [ 0, 0, 1],  # back
-        [ 0, 0,-1],  # front
+        [0, 1, 0],  # up
+        [0, -1, 0],  # down
+        [0, 0, 1],  # back
+        [0, 0, -1],  # front
     ])
 
-    # gattering all the replacements in the collumns
-    replaced_columns = [np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
+    # gattering all the replacements in the columns
+    replaced_columns = [
+        np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
 
     # stacking the columns
     cell_neighbors = np.stack(replaced_columns, axis=-1)
@@ -252,44 +254,47 @@ def RandomWalkingAgents(data):
     empty_neighbours = neighbor_values_flipped * (cell_neighbors + 1) - 1
 
     # extracting the id and flipped value of neighbours of the filled voxels: current position of agents
-    agent_neighbour_values_flipped = neighbor_values_flipped[np.where(volume_flat)]
+    agent_neighbour_values_flipped = neighbor_values_flipped[np.where(
+        volume_flat)]
     agent_neighbour_id = cell_neighbors[np.where(volume_flat)]
 
     # assigning random value to each neighbour (this can later be specified by a field instead of randomvalues)
     rand_shape = agent_neighbour_values_flipped.shape
-    agn_neigh_prority = agent_neighbour_values_flipped * np.random.rand(rand_shape[0], rand_shape[1])
+    agn_neigh_priority = agent_neighbour_values_flipped * \
+        np.random.rand(rand_shape[0], rand_shape[1])
 
     # getting the argmax to find the selected neighbours
-    neigh_selection = agn_neigh_prority.argmax(axis=1)
+    neigh_selection = agn_neigh_priority.argmax(axis=1)
 
     # extracting the voxel id of the current position and the next selected position of all agents
-    cur_pos_id = agent_neighbour_id[:,0]
-    sel_pos_id = agent_neighbour_id[np.arange(neigh_selection.size),neigh_selection]
+    cur_pos_id = agent_neighbour_id[:, 0]
+    sel_pos_id = agent_neighbour_id[np.arange(
+        neigh_selection.size), neigh_selection]
 
-    # checking for unique idsin the new_position_id: to prevent two agents merging together by moving into one voxel
-    __ , unq_indices = np.unique(sel_pos_id, return_index=True)
+    # checking for unique ids in the new_position_id: to prevent two agents merging together by moving into one voxel
+    __, unq_indices = np.unique(sel_pos_id, return_index=True)
 
-    # setting the uniqe voxels in the selected position to current position: updating the cur_pos_id. (this is computationally cheaper than setting it in a new array)
+    # setting the unique voxels in the selected position to current position: updating the cur_pos_id. (this is computationally cheaper than setting it in a new array)
     cur_pos_id[unq_indices] = sel_pos_id[unq_indices]
 
-    # emptying the volume and filling the selected neighbours 
+    # emptying the volume and filling the selected neighbours
     volume_flat *= 0
     volume_flat[cur_pos_id] = 1
 
     # on-cells 1D-index
-    oncells_1d_ind = np.argwhere(volume_flat == 1).ravel()
+    on_cells_1d_ind = np.argwhere(volume_flat == 1).ravel()
 
     # unravel the indices to 3D-index
-    oncells_3d_ind = np.stack(np.unravel_index(
-        oncells_1d_ind, volume.shape), axis=-1)
+    on_cells_3d_ind = np.stack(np.unravel_index(
+        on_cells_1d_ind, volume.shape), axis=-1)
 
-    # map back the indicies (add initial minimum and subtract 1 for the padded layer)
-    new_voxel_positions = oncells_3d_ind + minbound - 1
+    # map back the indices (add initial minimum and subtract 1 for the padded layer)
+    new_voxel_positions = on_cells_3d_ind + minbound - 1
 
     ###########################################################################
-    # ATTENTION: 
-    # Agents are not able to merge anymore. if two agent has chose one single 
-    # voxel as the next position. one of would randomly be selected to move to 
+    # ATTENTION:
+    # Agents are not able to merge anymore. if two agent has chose one single
+    # voxel as the next position. one of would randomly be selected to move to
     # the next position and the other one will remain in his old position
     ###########################################################################
 

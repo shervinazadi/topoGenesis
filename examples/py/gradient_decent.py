@@ -53,8 +53,8 @@ print(l_walk)
   [0. 0. 0. 0. 0.]]]
 """
 
-# retrieve lsttice indicies
-l_inds = l_vals.indicies
+# retrieve lattice indices
+l_inds = l_vals.indices
 
 """
 print(l_inds)
@@ -79,7 +79,7 @@ for i in range(20):
     local_min_neighbour = l_vals.arg_apply_stencil(
         l_inds, s, border_condition="pad_outside", padding_value=1.0)
 
-    # convert the current positions id and selected neighbour id to lattice indicies
+    # convert the current positions id and selected neighbour id to lattice indices
     old_pos = np.array(np.unravel_index(l_inds[l_walk > 0], l_walk.shape))
     new_pos = np.array(np.unravel_index(
         local_min_neighbour[l_walk > 0], l_walk.shape))

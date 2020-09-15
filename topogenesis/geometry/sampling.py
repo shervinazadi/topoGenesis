@@ -80,19 +80,19 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     vol = np.zeros(vol_size)
 
     ####################################################
-    # claculate the origin and direction of rays
+    # compute the origin and direction of rays
     ####################################################
 
-    # increasing the vol_size by one to accomodate for
+    # increasing the vol_size by one to accommodate for
     # shooting from corners
     vol_size_off = vol_size + 1
 
-    # retriev the voxel index for ray origins
+    # retrieve the voxel index for ray origins
     hit_vol_ind = np.indices(vol_size_off)
     vol_ind_trans = np.transpose(hit_vol_ind) + mesh_bb_min_z3
     hit_vol_ind = np.transpose(vol_ind_trans)
 
-    # retieve the ray origin indicies
+    # retrieve the ray origin indices
     ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1)
                     .transpose((1, 2, 0))
                     .reshape(-1, 3)
@@ -104,7 +104,7 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
 
     # tile(stamp) the X-ray direction with the (Y-direction
     # * Z-direction) . Then repeat this for all dimensions
-    # TODO: this line has a problem given the negative indicies
+    # TODO: this line has a problem given the negative indices
     # are included now
     ray_dir = [np.tile(normals[d],
                        (vol_size_off[(d + 1) % dim_num]
@@ -169,23 +169,23 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     return tuple(out) if len(out) > 1 else out[0]
 
 
-def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig,
+def intersect(face_vertices_xyz, unit, mesh_bb_size, ray_orig,
               proj_ray_orig, ray_dir, tol):
     face_hit_pos = []
 
     # check if the face is a triangle
-    if face_verticies_xyz.shape[0] != 3:
+    if face_vertices_xyz.shape[0] != 3:
         return([])
 
     # check if any coordinate of the projected ray origin is in betwen
     # the max and min of the coordinates of the face
     min_con = proj_ray_orig >= np.amin(
-        face_verticies_xyz, axis=0)*(1 - ray_dir)
+        face_vertices_xyz, axis=0)*(1 - ray_dir)
     max_con = proj_ray_orig <= np.amax(
-        face_verticies_xyz, axis=0)*(1 - ray_dir)
+        face_vertices_xyz, axis=0)*(1 - ray_dir)
     in_range_rays = np.all(min_con * max_con, axis=1)
 
-    # retrieve the ray indicies that are in range
+    # retrieve the ray indices that are in range
     in_rang_ind = np.argwhere(in_range_rays).flatten()
 
     # iterate over the rays
@@ -195,14 +195,14 @@ def intersect(face_verticies_xyz, unit, mesh_bb_size, ray_orig,
         # retrieve ray origin
         orig_pos = ray_orig[ray]
         # calc the destination of ray (max distance that it needs to
-        # travel) this line has a problem given the negative indicies
+        # travel) this line has a problem given the negative indices
         # are included now
         dest_pos = orig_pos + direction * mesh_bb_size
 
-        # intersction
+        # intersection
         # Translated from Pirouz C#
         hit_pt = triangle_line_intersect(
-            (orig_pos, dest_pos), face_verticies_xyz, tol=tol)
+            (orig_pos, dest_pos), face_vertices_xyz, tol=tol)
         if hit_pt is not None:
             face_hit_pos.append(hit_pt)
 
@@ -253,7 +253,7 @@ def triangle_line_intersect(L, Vx, tol=1e-06):
 
         # L[0] + np.dot(alpha, (L[1] - L[0])): parameter along the
         # line where it intersects the plane in question, only if
-        # not paralell to the plane
+        # not parallel to the plane
         W = L[0] + np.dot(alpha, (L[1] - L[0])) - O
 
         UU = np.dot(U, U)
@@ -317,6 +317,6 @@ def surface_normal_newell_vectorized(poly):
     if norm == 0:
         raise ValueError('zero norm')
     else:
-        normalised = n/norm
+        normalized = n/norm
 
-    return normalised
+    return normalized

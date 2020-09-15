@@ -21,6 +21,7 @@ __status__ = "Dev"
 
 file_directory = os.path.dirname(os.path.abspath(__file__))
 
+
 class lattice(np.ndarray):
 
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
@@ -32,7 +33,7 @@ class lattice(np.ndarray):
         maxbound = np.rint(bounds[1] / unit).astype(int)
         bounds = np.array([minbound, maxbound])*unit
 
-        # unit nparray
+        # unit np array
         unit = np.array(unit)
 
         # raise value error if the size of unit is neighter 1 nor the length of the minimum
@@ -43,7 +44,7 @@ class lattice(np.ndarray):
         # calculating shape based on bounds and unit
         shape = 1 + maxbound - minbound
 
-        # set defualt value
+        # set default value
         if default_value != None:
             buffer = np.tile(
                 default_value, shape)
@@ -110,11 +111,11 @@ class lattice(np.ndarray):
 
     @property
     def centroids(self):
-        # extract the indicies of the True values # with sparse matrix we dont need to search
+        # extract the indices of the True values # with sparse matrix we don't need to search
         point_array = np.argwhere(self == True)
         # convert to float
         point_array = point_array.astype(float)
-        # multply by unit
+        # multiply by unit
         point_array *= self.unit
         # move to minimum
         point_array += self.minbound
@@ -136,7 +137,8 @@ class lattice(np.ndarray):
         threshed = grid.threshold([0.9, 1.1])
 
         # adding the voxels: light red
-        plot.add_mesh(threshed, show_edges=True, color="#ff8fa3", opacity=0.3, label="Cells")
+        plot.add_mesh(threshed, show_edges=True, color="#ff8fa3",
+                      opacity=0.3, label="Cells")
 
         if show_outline:
             # adding the boundingbox wireframe
@@ -144,7 +146,8 @@ class lattice(np.ndarray):
 
         if show_centroids:
             # adding the voxel centeroids: red
-            plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5, render_points_as_spheres=True, label="Cell Centroidss")
+            plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5,
+                          render_points_as_spheres=True, label="Cell Centroidss")
 
         return plot
 
@@ -185,7 +188,7 @@ class lattice(np.ndarray):
 
         # getting shifts by expanding the stencil in the Fortran Order
         shifts = mc_stencil.expand('F')
-        
+
         # pad the volume with zero in every direction
         # TODO make this an option instead of default
         volume = np.pad(self, (1, 1), mode='constant', constant_values=(0, 0))
@@ -194,15 +197,16 @@ class lattice(np.ndarray):
         volume_inds = np.arange(volume.size).reshape(volume.shape)
 
         # gattering all the replacements in the collumns
-        replaced_columns = [np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
+        replaced_columns = [
+            np.roll(volume_inds, shift, np.arange(3)).ravel() for shift in shifts]
 
         # stacking the columns
         cell_corners = np.stack(replaced_columns, axis=-1)
 
         # converting volume value (TODO: this needs to become a method of its own)
         volume_flat = volume.ravel()
-        volume_flat[volume_flat>0.5] = 1
-        volume_flat[volume_flat<0.5] = 0
+        volume_flat[volume_flat > 0.5] = 1
+        volume_flat[volume_flat < 0.5] = 0
 
         # replace neighbours by their value in volume
         neighbor_values = volume_flat[cell_corners]
@@ -212,17 +216,19 @@ class lattice(np.ndarray):
         legend = 2**np.arange(8)
 
         # multiply the corner with the power of two, sum them, and reshape to the original volume shape
-        tile_id = np.sum(legend * neighbor_values, axis=1).reshape(volume.shape)
+        tile_id = np.sum(legend * neighbor_values,
+                         axis=1).reshape(volume.shape)
 
         # drop the last column, row and page (since cube-grid is 1 less than the voxel grid in every dimension)
         # TODO consider that removing padding would eliminate the need for this line
         cube_grid = tile_id[:-1, :-1, :-1]
 
         # initializing the lattice
-        cube_lattice = lattice([self.minbound, self.maxbound + self.unit], unit=self.unit, dtype=np.uint8, buffer=cube_grid, default_value=False)
-        
+        cube_lattice = lattice([self.minbound, self.maxbound + self.unit],
+                               unit=self.unit, dtype=np.uint8, buffer=cube_grid, default_value=False)
+
         # set the values that are bigger than 0 (transfering values)
-        cube_lattice[cube_grid>0] = cube_grid[cube_grid>0] 
+        cube_lattice[cube_grid > 0] = cube_grid[cube_grid > 0]
 
         return cube_lattice
 
@@ -327,7 +333,8 @@ class cloud(np.ndarray):
             # R3 to Z3 : finding the closest voxel to each point
             point_scaled = self / unit
             # shift the hit points in each 2-dimension (n in 1-axes) backward and formard (s in [-1,1]) and rint all the possibilities
-            vox_ind = [np.rint(point_scaled + unit * n * s * 0.001) for n in (1-axes) for s in [-1, 1]]
+            vox_ind = [np.rint(point_scaled + unit * n * s * 0.001)
+                       for n in (1-axes) for s in [-1, 1]]
             vox_ind = np.vstack(vox_ind)
         else:
             vox_ind = np.rint(self / unit).astype(int)
@@ -357,7 +364,8 @@ class cloud(np.ndarray):
     def fast_vis(self, plot):
 
         # adding the original point cloud: blue
-        plot.add_mesh(pv.PolyData(self), color='#2499ff', point_size=3, render_points_as_spheres=True, label="Point Cloud")
+        plot.add_mesh(pv.PolyData(self), color='#2499ff', point_size=3,
+                      render_points_as_spheres=True, label="Point Cloud")
 
         return plot
 
@@ -371,7 +379,7 @@ class cloud(np.ndarray):
 
 class stencil(np.ndarray):
 
-    def __new__(subtype, point_array, ntype="Custom", origin=np.array([0,0,0]), dtype=int, buffer=None, offset=0,
+    def __new__(subtype, point_array, ntype="Custom", origin=np.array([0, 0, 0]), dtype=int, buffer=None, offset=0,
                 strides=None, order=None):
 
         # extracting the shape from point_array
@@ -384,8 +392,8 @@ class stencil(np.ndarray):
         # ndarray constructor, but return an object of our type.
         # It also triggers a call to stencil.__array_finalize__
         obj = super(stencil, subtype).__new__(subtype, shape, dtype,
-                                            buffer, offset, strides,
-                                            order)
+                                              buffer, offset, strides,
+                                              order)
 
         # set the neighbourhood type
         obj.ntype = ntype
@@ -427,10 +435,10 @@ class stencil(np.ndarray):
         self.ntype = getattr(obj, 'ntype', None)
         self.origin = getattr(obj, 'origin', None)
 
-
         # We do not need to return anything
+
     def __array_wrap__(self, array, context=None):
-        
+
         temp = np.array(array)
 
         # checking if the array has any value other than 0, and 1
@@ -452,24 +460,24 @@ class stencil(np.ndarray):
         locations = self.origin - np.argwhere(self)
 
         # check the sorting method
-        
-        if sort=="dist": # Sorted Based on the distance from origin
+
+        if sort == "dist":  # Sorted Based on the distance from origin
             # calculating the distance of each neighbour
             sums = np.abs(locations).sum(axis=1)
             # sorting to identify the main cell
             order = np.argsort(sums)
 
-        elif sort=="F": # Fortran Sort, used for Boolean Marching Cubes
+        elif sort == "F":  # Fortran Sort, used for Boolean Marching Cubes
             order = np.arange(self.size).reshape(self.shape).flatten('F')
 
         # sort and return
         return locations[order].astype(int)
-    
+
     def set_index(self, index, value):
         ind = np.array(index) + self.origin
         if ind.size != 3:
             raise ValueError(" the index needs to have three components")
-        self[ind[0],ind[1],ind[2]] = value
+        self[ind[0], ind[1], ind[2]] = value
 
 
 def create_stencil(type_str, steps, clip=None):
@@ -489,7 +497,7 @@ def create_stencil(type_str, steps, clip=None):
 
         # check the number of steps
         chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
-        
+
         # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
         locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
@@ -503,7 +511,7 @@ def create_stencil(type_str, steps, clip=None):
 
     elif type_str == "moore":
         # https://en.wikipedia.org/wiki/Moore_neighborhood
-        
+
         # claculating all the possible shifts to apply to the array
         shifts = np.array(list(itertools.product(
             list(range(-clip, clip+1)), repeat=3)))
@@ -513,7 +521,7 @@ def create_stencil(type_str, steps, clip=None):
 
         # check the number of steps
         chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
-        
+
         # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
         locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
@@ -526,7 +534,7 @@ def create_stencil(type_str, steps, clip=None):
         return stencil(s, ntype=type_str, origin=np.array([clip, clip, clip]))
 
     elif type_str == "boolean_marching_cube":
-        
+
         # # shifts to check 8 corner of cube (multiply by -1 since shift goes backward)
         # shifts = np.array([
         #     [0, 0, 0],  # 1
@@ -544,17 +552,17 @@ def create_stencil(type_str, steps, clip=None):
 
         # # check the number of steps
         # chosen_shift_ind = np.argwhere(shift_steps <= steps).ravel()
-        
+
         # # select the valid indices from shifts variable, transpose them to get separate indicies in rows, add the number of steps to make this an index
         # locs = np.transpose(shifts[chosen_shift_ind]) + clip
 
         # inilize the stencil
-        s = np.ones((2,2,2)).astype(int)
+        s = np.ones((2, 2, 2)).astype(int)
 
         # # fill in the stencil
         # s[locs[0], locs[1], locs[2]] = 1
 
-        return stencil(s, ntype=type_str, origin=np.array([0,0,0]))
+        return stencil(s, ntype=type_str, origin=np.array([0, 0, 0]))
 
     else:
         raise ValueError(
@@ -663,13 +671,15 @@ def marching_cube_vis(p, cube_lattice, style_str):
     filled_cube_pos = cube_pos[cube_tid > 0]
     filled_cube_tid = cube_tid[cube_tid > 0]
 
-    if style_str!="chamfer": 
-        raise ValueError("Meshing style is not valid. Valid styles are: ['chamfer']")
+    if style_str != "chamfer":
+        raise ValueError(
+            "Meshing style is not valid. Valid styles are: ['chamfer']")
 
     # load tiles
     tiles = [0]
-    for i in range(1,256):
-        tile_path = os.path.join(file_directory ,"resources/mc_tiles", style_str, "Tile_{0:03d}.obj".format(i))
+    for i in range(1, 256):
+        tile_path = os.path.join(
+            file_directory, "resources/mc_tiles", style_str, "Tile_{0:03d}.obj".format(i))
         tile = pv.read(tile_path)
         tile.points *= cube_lattice.unit
         tiles.append(tile)
@@ -681,14 +691,16 @@ def marching_cube_vis(p, cube_lattice, style_str):
     for i in range(1, filled_cube_tid.size):
         tile = tiles[filled_cube_tid[i]]
         # add the faces list, changing the point numbers
-        new_faces = np.concatenate((new_faces, tile.faces.reshape(-1, 4) + np.array([0,1,1,1])*new_points.shape[0]), axis=0)
+        new_faces = np.concatenate(
+            (new_faces, tile.faces.reshape(-1, 4) + np.array([0, 1, 1, 1])*new_points.shape[0]), axis=0)
         # add the new points, change the position based on the location
-        new_points = np.concatenate((new_points, tile.points + filled_cube_pos[i]), axis=0)
+        new_points = np.concatenate(
+            (new_points, tile.points + filled_cube_pos[i]), axis=0)
 
     # construct the new mesh and add it to plot
     new_tile = pv.PolyData(new_points, new_faces)
     p.add_mesh(new_tile, color='#abd8ff')
-    
+
     return p
 
 
@@ -711,7 +723,8 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     if unit.size == 1:
         unit = np.array([unit, unit, unit])
     elif unit.size != 3:
-        raise ValueError("unit needs to have three elements representing the unit size for mesh sampling in three dimensions")
+        raise ValueError(
+            "unit needs to have three elements representing the unit size for mesh sampling in three dimensions")
     dim_num = unit.size
     multi_core_process = kwargs.get('multi_core_process', False)
     return_ray_origin = kwargs.get('return_ray_origin', False)
@@ -750,7 +763,8 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     hit_vol_ind = np.transpose(vol_ind_trans)
 
     # retieve the ray origin indicies
-    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1, 2, 0)).reshape(-1, 3) for d in range(dim_num)]
+    ray_orig_ind = [np.take(hit_vol_ind, 0, axis=d + 1).transpose((1,
+                                                                   2, 0)).reshape(-1, 3) for d in range(dim_num)]
     ray_orig_ind = np.vstack(ray_orig_ind)
 
     # retrieve the direction of ray shooting for each origin point
@@ -778,7 +792,8 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
         with concurrent.futures.ProcessPoolExecutor() as executor:
             # submit the processes
             # results = [executor.submit(intersect, geo_mesh, face, unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in geo_mesh.faces()]
-            results = [executor.submit(intersect, mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol) for face in mesh_faces]
+            results = [executor.submit(intersect, mesh_vertices[face], unit, mesh_bb_size,
+                                       ray_orig, proj_ray_orig, ray_dir, tol) for face in mesh_faces]
             # fetch the results
             for f in concurrent.futures.as_completed(results):
                 samples.extend(f.result())
@@ -793,7 +808,8 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
             # print(mesh_vertices[np.array(face).astype(int)])
             # print(mesh_vertices[np.array(face)])
 
-            face_hit_pos = intersect(mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol)
+            face_hit_pos = intersect(
+                mesh_vertices[face], unit, mesh_bb_size, ray_orig, proj_ray_orig, ray_dir, tol)
             samples.extend(face_hit_pos)
 
     ####################################################
@@ -873,7 +889,7 @@ def TriangleLineIntersect(L, Vx, tol=1e-06):
 
     if len(Vx) != 3:
         raise ValueError('A triangle needs to have three vertexes')
-    
+
     ####################################################
     # PROCEDURE
     ####################################################
@@ -883,7 +899,7 @@ def TriangleLineIntersect(L, Vx, tol=1e-06):
     U = Vx[1] - Vx[0]
     V = Vx[2] - Vx[0]
     # finding normal vector
-    N = surface_normal_newell_vectorized(Vx) # np.cross(U, V)
+    N = surface_normal_newell_vectorized(Vx)  # np.cross(U, V)
 
     Nomin = np.dot((O - L[0]), N)
     Denom = np.dot(N, (L[1] - L[0]))
@@ -950,7 +966,7 @@ def surface_normal_newell_vectorized(poly):
     poly_11 = np.roll(poly, [-1, -1], np.arange(2))
 
     n = np.roll(np.sum((poly - poly_10) * (poly_01 + poly_11), axis=0), -1, 0)
-   
+
     norm = np.linalg.norm(n)
     if norm == 0:
         raise ValueError('zero norm')
@@ -967,10 +983,10 @@ def load_mesh(mesh_path):
     # check if all of the faces are triangles
     if not pv_mesh.is_all_triangles():
         raise ValueError('All faces need to be triangles!')
-    
+
     # extract faces and vertices
     v = np.array(pv_mesh.points)
-    f = pv_mesh.faces.reshape(-1,4)[:,1:]
+    f = pv_mesh.faces.reshape(-1, 4)[:, 1:]
 
     # return them as 3d numpy arrays
     return np.array(v).astype(np.float64), np.array(f).astype(np.int64)

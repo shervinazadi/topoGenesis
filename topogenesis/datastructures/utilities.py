@@ -26,19 +26,7 @@ file_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 def scatter(bounds, count):
-    """[summary]
 
-    Arguments:
-        bounds {[2d array]} -- [array of two vectors, indicating the 
-        bounding box of the scattering envelope with a minimum and 
-        maximum of the bounding box]
-        count {[int]} -- [number of the points to scatter within the 
-        bounding box]
-
-    Returns:
-        [cloud] -- [returns a cloud object countaing the coordinates 
-        of the scattered points]
-    """
     point_array = np.random.uniform(bounds[0],
                                     bounds[1],
                                     (count, bounds.shape[1]))
@@ -76,11 +64,11 @@ def lattice_from_csv(file_path):
 
 def marching_cube_vis(p, cube_lattice, style_str):
 
-    # extract cube indicies
+    # extract cube indices
     cube_ind = np.transpose(np.indices(cube_lattice.shape),
                             (1, 2, 3, 0)).reshape(-1, 3)
     # extract cube positions
-    cube_pos = (cube_ind - 0.5) * cube_lattice.unit + cube_lattice.minbound
+    cube_pos = (cube_ind + 0.5) * cube_lattice.unit + cube_lattice.minbound
 
     # extract cube tid
     cube_tid = cube_lattice.ravel()
