@@ -39,6 +39,18 @@ def cloud_from_csv(file_path, delimiter=','):
     return cloud(point_array)
 
 
+def cloud_from_mesh_vertices(mesh_path):
+
+    # load the mesh using pyvista
+    pv_mesh = pv.read(mesh_path)
+
+    # extract vertices
+    v = np.array(pv_mesh.points)
+
+    # return vertices as cloud
+    return cloud(v)
+
+
 def lattice_from_csv(file_path):
     # read metadata
     meta_df = pd.read_csv(file_path, nrows=3)

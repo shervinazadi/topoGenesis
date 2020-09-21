@@ -528,6 +528,17 @@ class cloud(np.ndarray):
     def maxbound(self):
         return self.bounds[1]
 
+    @classmethod
+    def from_mesh_vertices(cls, mesh_path):
+        # load the mesh using pyvista
+        pv_mesh = pv.read(mesh_path)
+
+        # extract vertices
+        vertices = np.array(pv_mesh.points).astype(np.float64)
+
+        # return vertices as cloud
+        return cls(vertices)
+
     def voxelate(self, unit, **kwargs):
 
         ####################################################
