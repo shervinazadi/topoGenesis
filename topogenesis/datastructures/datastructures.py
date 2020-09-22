@@ -458,7 +458,7 @@ class lattice(np.ndarray):
         # calculating all the possible shifts to apply to the array
         shifts = stencil.expand(order)
 
-        # gattering all the replacements in the columns
+        # gathering all the replacements in the columns
         replaced_columns = [
             np.roll(self_ind, shift, np.arange(3)).ravel() for shift in shifts]
 
@@ -466,6 +466,52 @@ class lattice(np.ndarray):
         cell_neighbors = np.stack(replaced_columns, axis=-1)
 
         return cell_neighbors
+
+    def find_neighbours_masked(self, stencil, order="dist", mask=None, loc=None, border_condition="standard"):
+        """ Given an stencil, this method will return the neighbours of the cell with regard to the stencil specification in a numpy 2D array with each row corresponding to one cell in lattice.
+
+        :param stencil: Stencil that describes the neighbourhood
+        :type stencil: topogenesis.Stencil
+        :param order: the order of neighbours is one of {"dist", "C", "F"}. 'dist' sorts the neighbours based on the distance from origin cell, ‘C’ sorts in row-major (C-style) order, and ‘F’ sorts in column-major (Fortran- style) order. defaults to "dist"
+        :type order: str, optional
+        :return: 2D array describing the neighbours of each cell in the row
+        :rtype: numpy.ndarray
+        """
+
+        # the id of voxels (0,1,2, ... n)
+        self_ind = self.indices
+
+        # find the bounds of window around the specified location
+        win_min = loc + stencil.minbound
+        win_max = loc + stencil.maxbound + 1
+        if border_condition == "standard":
+            # ensure win_min is not less than zero
+            win_min = np.maximum(win_min, np.array([0, 0, 0]))
+            # ensure win_max is not more than shape -1
+            win_max = np.minimum(win_max, np.array(self_ind.shape))
+        if border_condition == "roll":
+            raise NotImplementedError
+
+        self_ind = self_ind[win_min[0]: win_max[0],
+                            win_min[1]: win_max[1],
+                            win_min[2]: win_max[2]]
+
+        # TODO: Sometimes, self_ind turns to be zero. need to be debugged
+        # find the new 1D-index of the location
+        new_loc_ind = np.ravel_multi_index(
+            tuple(stencil.origin), self_ind.shape)
+
+        # calculating all the possible shifts to apply to the array
+        shifts = stencil.expand(order)
+
+        # gathering all the replacements in the columns
+        replaced_columns = [
+            np.roll(self_ind, shift, np.arange(3)).ravel() for shift in shifts]
+
+        # stacking the columns
+        cell_neighbors = np.stack(replaced_columns, axis=-1)
+
+        return cell_neighbors[new_loc_ind]
 
 
 class cloud(np.ndarray):
@@ -560,7 +606,7 @@ class cloud(np.ndarray):
         if closed:
             # R3 to Z3 : finding the closest voxel to each point
             point_scaled = self / unit
-            # shift the hit points in each 2-dimension (n in 1-axes) backward and formard (s in [-1,1]) and rint all the possibilities
+            # shift the hit points in each 2-dimension (n in 1-axes) backward and forward (s in [-1,1]) and rint all the possibilities
             shifts = np.array(list(itertools.product([-1, 0, 1], repeat=3)))
             shifts_steps = np.sum(np.absolute(shifts), axis=1)
             chosen_shift_ind = np.argwhere(shifts_steps == 3).ravel()
