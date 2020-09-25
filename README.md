@@ -63,7 +63,9 @@ conda activate genesis
 3. install all dependencies:["numpy", "pandas", "pyvista"]
 
 ```Shell Script
-conda install numpy pandas pyvista
+conda install numpy
+conda install pandas
+conda install -c conda-forge pyvista
 ```
 
 4. install topogenesis locally within your environment with a symlink:
