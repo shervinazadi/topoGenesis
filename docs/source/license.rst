@@ -4,33 +4,24 @@
 License
 ************
 
-.. describe cross-platform ness like on homepage
+MIT License
 
-.. Installing Editable Version
-.. ================
+Copyright (c) 2020 Shervin Azadi, Pirouz Nourian
 
-.. 1. create a virtual environment using conda
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-.. .. code-block:: bash
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-..     conda create --name genesis
-
-.. 2. activate the environment
-
-.. .. code-block:: bash
-
-..     conda activate genesis
-
-.. 3. install all dependencies:[`numpy`, `pandas`, `pyvista`]
-
-.. .. code-block:: bash
-
-..     conda install numpy pandas pyvista
-
-.. 4. install an editable version of topogenesis within your environment with a symlink
-
-.. .. code-block:: bash
-
-..     python -m pip install -e .
-
-.. Ensure that the pip install is run from the python of the same conda environment (genesis): thus, first, navigate to that environment and type "python -m pip install -e". The addition -e uses the "symlink" module from pip ecosystem to ensure that a work-in-progress library is always updated from the latest source.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
