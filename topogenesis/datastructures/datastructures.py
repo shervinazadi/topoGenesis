@@ -15,6 +15,14 @@ file_directory = os.path.dirname(os.path.abspath(__file__))
 
 
 class lattice(np.ndarray):
+    """ Lattice is subclass of NumPy ndarrays that is adapted to represent 
+    a numerical field within a discrete 3dimensional space. It adds spatial 
+    properties and functionalities to ndimensional arrays such as bounds, 
+    unit, neighbourhood assessment and more.
+
+    :param np: [description]
+    :type np: [type]
+    """
 
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
                 strides=None, order=None, default_value=None):
@@ -312,7 +320,7 @@ class lattice(np.ndarray):
 
         :param stencil: the stencil to be applied on the lattice
         :type stencil: topogenesis.Stencil
-        :param border_condition: specifies how the border condition should be treated. The options are {"pad_outside", "pad_inside", "roll"}. "pad_outside" will offset the latice in every direction by one step, and fill the new cells with the given `padding_value` and procedes to performing the computation; the resultant lattice in this case has the same shape as the initial latice. "pad_inside" will perform the computation on the lattice, offsets inside by one cell from each side and returns the remainder cells; the resultant lattice is 2 cell smaller in each dimension than the original lattice. "roll" will assume that the end of each dimension is connected to the begining of it and interprets the connectivity of the lattice with a rolling approach; the resultant latice has the same shape is the original lattice. defaults to "pad_outside"
+        :param border_condition: specifies how the border condition should be treated. The options are {"pad_outside", "pad_inside", "roll"}. "pad_outside" will offset the lattice in every direction by one step, and fill the new cells with the given `padding_value` and procedes to performing the computation; the resultant lattice in this case has the same shape as the initial lattice. "pad_inside" will perform the computation on the lattice, offsets inside by one cell from each side and returns the remainder cells; the resultant lattice is 2 cell smaller in each dimension than the original lattice. "roll" will assume that the end of each dimension is connected to the beginning of it and interprets the connectivity of the lattice with a rolling approach; the resultant lattice has the same shape is the original lattice. defaults to "pad_outside"
         :type border_condition: str, optional
         :param padding_value: value used for padding in case the `border_condition` is set to "pad_outside", defaults to 0
         :type padding_value: same type as the lattice, optional
@@ -515,6 +523,10 @@ class lattice(np.ndarray):
 
 
 class cloud(np.ndarray):
+    """ Cloud is a subclass of NumPy ndarrays to represent pointclouds in a continuous 
+    3dimensional space. Clouds add spatial properties and functionalities such
+    as bounds and voxelate]
+    """
 
     def __new__(subtype, point_array, dtype=float, buffer=None, offset=0,
                 strides=None, order=None):
@@ -586,7 +598,17 @@ class cloud(np.ndarray):
         return cls(vertices)
 
     def voxelate(self, unit, **kwargs):
+        """ will voxelate the pointcloud based on a given unit size and returns 
+        a boolean lattice that describes which cells of the discrete space 
+        contained at least one point 
 
+        :param unit: discribes the cell size of the resultant discrete space
+        :type unit: int, numpy.array
+        :raises ValueError: if the size of the unit array does not correspond to 
+        the number of dimensions in point cloud
+        :return: boolean lattice describing which cells has contained at least one point
+        :rtype: topogenesis.Lattice
+        """
         ####################################################
         # INPUTS
         ####################################################
@@ -641,7 +663,19 @@ class cloud(np.ndarray):
         return l
 
     def fast_vis(self, plot):
+        """ Adds the pointcloud to a pyvista plotter and returns it. 
+        It is mainly used to rapidly visualize the point cloud
 
+        :param plot: a pyvista plotter
+        :type plot: pyvista.Plotter
+        :return: pyvista plotter containing points of the pointcloud
+        :rtype: pyvista.Plotter
+
+        .. code-block:: python
+
+            p = pyvista.Plotter()
+            cloud.fast_vis(p)
+        """
         # adding the original point cloud: blue
         plot.add_mesh(pv.PolyData(self),
                       color='#2499ff',
@@ -652,7 +686,21 @@ class cloud(np.ndarray):
         return plot
 
     def fast_notebook_vis(self, plot):
+        """ Adds the pointcloud to a pyvista ITK plotter and returns it. 
+        ITK plotters are specifically used in notebooks to plot the geometry inside 
+        the notebook environment It is mainly used to rapidly visualize the content 
+        of the lattice for visual confirmation
 
+        :param plot: a pyvista ITK plotter
+        :type plot: pyvista.PlotterITK
+        :return: pyvista ITK plotter containing lattice features such as cells, bounding box, cell centroids
+        :rtype: pyvista.PlotterITK
+
+        .. code-block:: python
+
+            p = pyvista.PlotterITK()
+            cloud.fast_notebook_vis(p)
+        """
         # adding the original point cloud: blue
         plot.add_points(pv.PolyData(self), color='#2499ff')
 
@@ -663,6 +711,9 @@ class cloud(np.ndarray):
 
 
 class stencil(np.ndarray):
+    """ Stencil is a subclass of NumPy ndarrays to represent neighbourhoods in a discrete
+    3dimensional space. Certain functions can be assigned to stencil to add functionalities similar to kernels to them. They also provide convenience functions for defining "Moore" or Von Neumann" neighbourhoods. Ufuncs can also be used to alter stencils (Addition, subtraction, etc)]
+    """
 
     def __new__(subtype, point_array, ntype="Custom", origin=np.array([0, 0, 0]), function=None, dtype=int, buffer=None, offset=0,
                 strides=None, order=None):
@@ -743,6 +794,14 @@ class stencil(np.ndarray):
         return self.bounds[1]
 
     def expand(self, order="dist"):
+        """ will return the local address of each filled cell. This can be 
+        utilized to access the neighbours of a cell in lattice.
+
+        :param order: the order of neighbours is one of {"dist", "C", "F"}. 'dist' sorts the neighbours based on the distance from origin cell, ‘C’ sorts in row-major (C-style) order, and ‘F’ sorts in column-major (Fortran- style) order. defaults to "dist"
+        :type order: str, optional
+        :return: array in shape of (n, 3) to describe the relative location of neighbours
+        :rtype: numpy.ndarray
+        """
         # list the locations
         locations = self.origin - np.argwhere(self)
 
@@ -767,6 +826,14 @@ class stencil(np.ndarray):
         return locations[ordered].astype(int)
 
     def set_index(self, index, value):
+        """ Sets the value of a cell in stencil via local indexing (based on the origin cell)
+
+        :param index: local address of the desired cell
+        :type index: list, numpy.array
+        :param value: the desired value to be set one of {0, 1}
+        :type value: int
+        :raises ValueError: if the local address is non-existence or incompatible with the shape of stencil
+        """
         ind = np.array(index) + self.origin
         if ind.size != 3:
             raise ValueError(" the index needs to have three components")
@@ -774,6 +841,18 @@ class stencil(np.ndarray):
 
 
 def create_stencil(type_str, steps, clip=None):
+    """ Creates a stencil based on predefined neighbourhoods such as "von_neumann" or "moore".
+
+    :param type_str: one of {"von_neumann", "moore", "boolean_marching_cube"}
+    :type type_str: str
+    :param steps: {"von_neumann", "moore"} neighbourhoods are defined based on how many steps far from the origin cell should be included. 
+    :type steps: int
+    :param clip: will clip the defined neighbourhood, for example ("von_neumann", step=1) describes the 6-neighbourhood of a cell in 3dimensional lattice, ("von_neumann", step=2, clip=1) describes the 18-neighbourhood, and ("moore", step=1) describes 26-neighbourhood, defaults to None
+    :type clip: int, optional
+    :raises ValueError: if the neighbourhood type is unknown
+    :return: the stencil of the perscribed neighbourhood
+    :rtype: topogenesis.Stencil
+    """
     # check if clip is specified. if it is not, set it to the steps
     if clip == None:
         clip = steps
@@ -844,11 +923,21 @@ def create_stencil(type_str, steps, clip=None):
 
     else:
         raise ValueError(
-            'non-valid neighborhood type for stencil creation')
+            'non-valid neighbourhood type for stencil creation')
 
 
 def to_lattice(a, minbound: np.ndarray, unit=1) -> lattice:
+    """ Converts a numpy array into a lattice
 
+    :param a: array
+    :type a: numpy.ndarray
+    :param minbound: describing the minimum bound of the lattice in continuous space
+    :type minbound: numpy.ndarray
+    :param unit: the unit size of the lattice, defaults to 1
+    :type unit: int, optional
+    :return: the lattice representation of the array
+    :rtype: topogenesis.Lattice
+    """
     # check if the minbound is a lattice
     if type(minbound) is lattice:
         l = minbound
