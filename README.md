@@ -50,27 +50,19 @@ topoGenesis aims to utilize the vast functionalities of fields (mathematical obj
 
 1. create a virtual environment using conda
 
-```Shell Script
-conda create --name genesis
+```bash
+conda env create -f environment.yml
 ```
 
 2. activate the environment
 
-```Shell Script
+```bash
 conda activate genesis
 ```
 
-3. install all dependencies:["numpy", "pandas", "pyvista"]
+3. install topogenesis locally within your environment with a symlink:
 
-```Shell Script
-conda install numpy
-conda install pandas
-conda install -c conda-forge pyvista
-```
-
-4. install topogenesis locally within your environment with a symlink:
-
-```Shell Script
+```bash
 python -m pip install -e .
 ```
 
