@@ -1,0 +1,10 @@
+site_name: My Docs
+theme:
+  name: "material"
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+plugins:
+  - search
+  - mkdocstrings

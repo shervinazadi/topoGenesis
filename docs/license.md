@@ -1,9 +1,3 @@
-.. _license:
-
-************
-License
-************
-
 MIT License
 
 Copyright (c) 2020 Shervin Azadi, Pirouz Nourian
