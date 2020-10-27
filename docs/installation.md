@@ -1,10 +1,9 @@
-
 ## Installation
 
 1. create a virtual environment using conda
 
 ```bash
-conda create --name genesis
+conda env create -f environment.yml
 ```
 
 2. activate the environment
@@ -13,15 +12,7 @@ conda create --name genesis
 conda activate genesis
 ```
 
-3. install all dependencies:["numpy", "pandas", "pyvista"]
-
-```bash
-conda install numpy
-conda install pandas
-conda install -c conda-forge pyvista
-```
-
-4. install topogenesis locally within your environment with a symlink:
+3. install topogenesis locally within your environment with a symlink:
 
 ```bash
 python -m pip install -e .
