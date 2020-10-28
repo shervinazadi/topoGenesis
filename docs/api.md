@@ -1,2 +1,0 @@
-<!-- ::: topogenesis.datastructures.lattice -->
-::: topogenesis
