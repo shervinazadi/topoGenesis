@@ -8,6 +8,8 @@ theme:
 plugins:
   - search
   - mkdocstrings:
+      watch:
+        - topogenesis
       handlers:
         python:
           selection:
