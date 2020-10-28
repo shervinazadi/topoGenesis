@@ -80,25 +80,25 @@ class lattice(np.ndarray):
         """Real minimum bound of the lattice
 
         Returns:
-            [numpy.ndarray]: [real minimum bound]
+            numpy.ndarray: real minimum bound
         """
         return self.bounds[0]
 
     @property
     def maxbound(self):
-        """ Real maximum bound of the lattice
+        """Real maximum bound of the lattice
 
-        :return: real maximum bound
-        :rtype: [numpy array]
+        Returns:
+            numpy.ndarray: real maximum bound
         """
         return self.bounds[1]
 
     @property
     def centroids(self):
-        """ Extracts the centroid of cells that have a positive or True value and returns them as a point cloud
+        """Extracts the centroid of cells that have a positive or True value and returns them as a point cloud
 
-        :return: a point cloud representing the centroids of the lattice cells
-        :rtype: topogenesis.Cloud
+        Returns:
+            topogenesis.Cloud: a point cloud representing the centroids of the lattice cells
         """
 
         # extract the indices of the True values # with sparse matrix we don't need to search
@@ -114,10 +114,10 @@ class lattice(np.ndarray):
 
     @property
     def indices(self):
-        """ Creates one-dimensional integer indices for cells in the lattice
+        """Creates one-dimensional integer indices for cells in the lattice
 
-        :return: integer lattice of indices 
-        :rtype: topogenesis.Lattice
+        Returns:
+            topogenesis.Lattice: integer lattice of indices 
         """
 
         ind = np.arange(self.size).reshape(self.shape)
