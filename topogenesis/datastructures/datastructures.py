@@ -578,14 +578,32 @@ class cloud(np.ndarray):
 
     @property
     def minbound(self):
+        """Real minimum bound of the point cloud
+
+        Returns:
+            numpy.ndarray: real minimum bound
+        """
         return self.bounds[0]
 
     @property
     def maxbound(self):
+        """Real maximum bound of the point cloud
+
+        Returns:
+            numpy.ndarray: real maximum bound
+        """
         return self.bounds[1]
 
     @classmethod
-    def from_mesh_vertices(cls, mesh_path):
+    def from_mesh_vertices(cls, mesh_path: str):
+        """ Extracts the vertices of a mesh as the point cloud
+
+        Args:
+            mesh_path (str): path to the mesh file
+
+        Returns:
+            topogenesis.Cloud: The point cloud including the vertices of the mesh
+        """
         # load the mesh using pyvista
         pv_mesh = pv.read(mesh_path)
 
@@ -596,20 +614,19 @@ class cloud(np.ndarray):
         return cls(vertices)
 
     def voxelate(self, unit, **kwargs):
-        """ will voxelate the pointcloud based on a given unit size and returns 
-        a boolean lattice that describes which cells of the discrete space 
-        contained at least one point 
+        """will voxelate the pointcloud based on a given unit size and returns a boolean lattice that describes which cells of the discrete space contained at least one point 
 
-        :param unit: discribes the cell size of the resultant discrete space
-        :type unit: int, numpy.array
-        :raises ValueError: if the size of the unit array does not correspond to 
+        Args:
+            unit (int, numpy.array): describes the cell size of the resultant discrete space
+
+        Raises:
+            ValueError: if the size of the unit array does not correspond to 
         the number of dimensions in point cloud
-        :return: boolean lattice describing which cells has contained at least one point
-        :rtype: topogenesis.Lattice
+
+        Returns:
+            topogenesis.Lattice: boolean lattice describing which cells has contained at least one point
         """
-        ####################################################
-        # INPUTS
-        ####################################################
+
         unit = np.array(unit)
         if unit.size != 1 and unit.size != self.minbound.size:
             raise ValueError(
@@ -618,10 +635,6 @@ class cloud(np.ndarray):
             unit = np.tile(unit, self.minbound.shape)
 
         closed = kwargs.get('closed', False)
-
-        ####################################################
-        # PROCEDURE
-        ####################################################
 
         if closed:
             # R3 to Z3 : finding the closest voxel to each point
@@ -654,26 +667,25 @@ class cloud(np.ndarray):
         # setting the occupied voxels to True
         l[mapped_ind[:, 0], mapped_ind[:, 1], mapped_ind[:, 2]] = True
 
-        ####################################################
-        # OUTPUTS
-        ####################################################
-
         return l
 
     def fast_vis(self, plot):
-        """ Adds the pointcloud to a pyvista plotter and returns it. 
+        """Adds the pointcloud to a pyvista plotter and returns it. 
         It is mainly used to rapidly visualize the point cloud
 
-        :param plot: a pyvista plotter
-        :type plot: pyvista.Plotter
-        :return: pyvista plotter containing points of the pointcloud
-        :rtype: pyvista.Plotter
+        Args:
+            plot (pyvista.Plotter): a pyvista plotter
 
-        .. code-block:: python
+        Returns:
+            pyvista.Plotter: the same pyvista plotter containing points of the pointcloud
 
-            p = pyvista.Plotter()
-            cloud.fast_vis(p)
+        **Usage Example:**
+        ```python
+        p = pyvista.Plotter()
+        cloud.fast_vis(
+        ```
         """
+
         # adding the original point cloud: blue
         plot.add_mesh(pv.PolyData(self),
                       color='#2499ff',
@@ -684,20 +696,18 @@ class cloud(np.ndarray):
         return plot
 
     def fast_notebook_vis(self, plot):
-        """ Adds the pointcloud to a pyvista ITK plotter and returns it. 
-        ITK plotters are specifically used in notebooks to plot the geometry inside 
-        the notebook environment It is mainly used to rapidly visualize the content 
-        of the lattice for visual confirmation
+        """Adds the pointcloud to a pyvista ITK plotter and returns it. ITK plotters are specifically used in notebooks to plot the geometry inside the notebook environment It is mainly used to rapidly visualize the content of the lattice for visual confirmation
 
-        :param plot: a pyvista ITK plotter
-        :type plot: pyvista.PlotterITK
-        :return: pyvista ITK plotter containing lattice features such as cells, bounding box, cell centroids
-        :rtype: pyvista.PlotterITK
+        Args:
+            plot (pyvista.PlotterITK): a pyvista ITK plotter
 
-        .. code-block:: python
+        Returns:
+            pyvista.PlotterITK: pyvista ITK plotter containing lattice features such as cells, bounding box, cell centroids
 
-            p = pyvista.PlotterITK()
-            cloud.fast_notebook_vis(p)
+        ```python
+        p = pyvista.PlotterITK()
+        cloud.fast_notebook_vis(p)
+        ```
         """
         # adding the original point cloud: blue
         plot.add_points(pv.PolyData(self), color='#2499ff')
@@ -709,8 +719,7 @@ class cloud(np.ndarray):
 
 
 class stencil(np.ndarray):
-    """ Stencil is a subclass of NumPy ndarrays to represent neighbourhoods in a discrete
-    3dimensional space. Certain functions can be assigned to stencil to add functionalities similar to kernels to them. They also provide convenience functions for defining "Moore" or Von Neumann" neighbourhoods. Ufuncs can also be used to alter stencils (Addition, subtraction, etc)]
+    """ Stencil is a subclass of NumPy ndarrays to represent neighbourhoods in a discrete 3dimensional space. Certain functions can be assigned to stencil to add functionalities similar to kernels to them. They also provide convenience functions for defining "Moore" or Von Neumann" neighbourhoods. Ufuncs can also be used to alter stencils (Addition, subtraction, etc)]
     """
 
     def __new__(subtype, point_array, ntype="Custom", origin=np.array([0, 0, 0]), function=None, dtype=int, buffer=None, offset=0,
@@ -791,14 +800,14 @@ class stencil(np.ndarray):
     def maxbound(self):
         return self.bounds[1]
 
-    def expand(self, order="dist"):
-        """ will return the local address of each filled cell. This can be 
-        utilized to access the neighbours of a cell in lattice.
+    def expand(self, order: str = "dist"):
+        """will return the local address of each filled cell. This can be utilized to access the neighbours of a cell in lattice.
 
-        :param order: the order of neighbours is one of {"dist", "C", "F"}. 'dist' sorts the neighbours based on the distance from origin cell, ‘C’ sorts in row-major (C-style) order, and ‘F’ sorts in column-major (Fortran- style) order. defaults to "dist"
-        :type order: str, optional
-        :return: array in shape of (n, 3) to describe the relative location of neighbours
-        :rtype: numpy.ndarray
+        Args:
+            order (str, optional): [description]. Defaults to "dist".
+
+        Returns:
+            numpy.ndarray: array in shape of (n, 3) to describe the relative location of neighbours
         """
         # list the locations
         locations = self.origin - np.argwhere(self)
@@ -823,33 +832,39 @@ class stencil(np.ndarray):
         # sort and return
         return locations[ordered].astype(int)
 
-    def set_index(self, index, value):
-        """ Sets the value of a cell in stencil via local indexing (based on the origin cell)
+    def set_index(self, index, value: int):
+        """Sets the value of a cell in stencil via local indexing (based on the origin cell)
 
-        :param index: local address of the desired cell
-        :type index: list, numpy.array
-        :param value: the desired value to be set one of {0, 1}
-        :type value: int
-        :raises ValueError: if the local address is non-existence or incompatible with the shape of stencil
+        Args:
+            index (list, numpy.array): local address of the desired cell
+            value (int): the desired value to be set one of {0, 1}
+
+        Raises:
+            ValueError: if the local address is non-existence or incompatible with the shape of stencil
         """
+
         ind = np.array(index) + self.origin
         if ind.size != 3:
             raise ValueError(" the index needs to have three components")
         self[ind[0], ind[1], ind[2]] = value
 
 
-def create_stencil(type_str, steps, clip=None):
-    """ Creates a stencil based on predefined neighbourhoods such as "von_neumann" or "moore".
+def create_stencil(type_str: str, steps: int, clip: int = None):
+    """Creates a stencil based on predefined neighbourhoods such as "von_neumann" or "moore".
 
-    :param type_str: one of {"von_neumann", "moore", "boolean_marching_cube"}
-    :type type_str: str
-    :param steps: {"von_neumann", "moore"} neighbourhoods are defined based on how many steps far from the origin cell should be included. 
-    :type steps: int
-    :param clip: will clip the defined neighbourhood, for example ("von_neumann", step=1) describes the 6-neighbourhood of a cell in 3dimensional lattice, ("von_neumann", step=2, clip=1) describes the 18-neighbourhood, and ("moore", step=1) describes 26-neighbourhood, defaults to None
-    :type clip: int, optional
-    :raises ValueError: if the neighbourhood type is unknown
-    :return: the stencil of the perscribed neighbourhood
-    :rtype: topogenesis.Stencil
+    Args:
+        type_str (str): 
+            one of {"von_neumann", "moore", "boolean_marching_cube"}
+        steps (int): 
+            {"von_neumann", "moore"} neighbourhoods are defined based on how many steps far from the origin cell should be included.
+        clip (int, optional): 
+            will clip the defined neighbourhood, for example ("von_neumann", step=1) describes the 6-neighbourhood of a cell in 3dimensional lattice, ("von_neumann", step=2, clip=1) describes the 18-neighbourhood, and ("moore", step=1) describes 26-neighbourhood, defaults to None
+
+    Raises:
+        ValueError: if the neighbourhood type is unknown
+
+    Returns:
+        topogenesis.Stencil: the stencil of the perscribed neighbourhood
     """
     # check if clip is specified. if it is not, set it to the steps
     if clip == None:
@@ -925,16 +940,18 @@ def create_stencil(type_str, steps, clip=None):
 
 
 def to_lattice(a, minbound: np.ndarray, unit=1) -> lattice:
-    """ Converts a numpy array into a lattice
+    """Converts a numpy array into a lattice
 
-    :param a: array
-    :type a: numpy.ndarray
-    :param minbound: describing the minimum bound of the lattice in continuous space
-    :type minbound: numpy.ndarray
-    :param unit: the unit size of the lattice, defaults to 1
-    :type unit: int, optional
-    :return: the lattice representation of the array
-    :rtype: topogenesis.Lattice
+    Args:
+        a (numpy.ndarray): 
+            array
+        minbound (numpy.ndarray): 
+            describing the minimum bound of the lattice in continuous space
+        unit (int, optional): 
+            the unit size of the lattice
+
+    Returns:
+        topogenesis.Lattice: the lattice representation of the array
     """
     # check if the minbound is a lattice
     if type(minbound) is lattice:
