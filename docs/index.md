@@ -63,3 +63,7 @@ topoGenesis aims to utilize the vast functionalities of fields (mathematical obj
   - Dynamic Systems (based on Differential Equations)
   - Agent-Based Modeling
   - Cellular Automata
+
+## Genesis Lab
+
+This project is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at [Genesis Lab: Laboratory of Generative Systems and Sciences](https://www.researchgate.net/lab/Genesis-Laboratory-of-Generative-Systems-and-Sciences-Pirouz-Nourian), Department of Architectural Engineering and Technology, at TU Delft.

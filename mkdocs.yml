@@ -1,4 +1,4 @@
-site_name: My Docs
+site_name: topoGenesis
 theme:
   name: "material"
   palette:
@@ -8,3 +8,13 @@ theme:
 plugins:
   - search
   - mkdocstrings
+nav:
+  - Home: "index.md"
+  - Installation: "installation.md"
+  - Tutorials: "tutorials.md"
+  - API:
+      - "Data Structures": "api/datastructures.md"
+      - "Geometry": "api/geometry.md"
+  - About:
+      - "License": "license.md"
+      - "Citing": "citing.md"
