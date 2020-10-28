@@ -1,2 +1,4 @@
+numpy
+pyvista
 mkdocs-material
 mkdocstrings
