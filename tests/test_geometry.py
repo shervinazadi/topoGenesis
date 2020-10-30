@@ -82,3 +82,34 @@ def test_mesh_sampling():
         computedted_sample_cloud, expected_sample_cloud, rtol=1e-06, atol=0)
 
     # Cleanup
+
+def test_flat_mesh_sampling():
+    """
+    Testing flat mesh sampling with sample
+    """
+
+    # # Setup
+    # tol = 1e-09
+
+    # mesh = tg.geometry.load_mesh(os.path.join(
+    #     sample_data_path, "bunny_lowpoly.obj"))
+
+    # expected_sample_cloud = np.array(
+    #     [[0.0064880164, 0.05,  0.05],
+    #      [-0.009171068, 0.05,  0.05],
+    #      [-0.05, 0.05,  0.0358800451],
+    #      [0.05, 0.05,  0.0254832824],
+    #      [0.05, 0.05, -0.0011166829],
+    #      [-0.05, 0.15,  0.0113995458],
+    #      [-0.05, 0.15, -0.0041858891],
+    #      [-0.05, 0.05, -0.0079428066]]
+    # )
+    # #
+    # # Exercise
+    # computedted_sample_cloud = tg.geometry.mesh_sampling(mesh, 0.1, tol=tol)
+
+    # # Verify
+    # np.testing.assert_allclose(
+    #     computedted_sample_cloud, expected_sample_cloud, rtol=1e-06, atol=0)
+
+    # # Cleanup

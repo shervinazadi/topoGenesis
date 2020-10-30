@@ -53,7 +53,7 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     dim_num = unit.size
     multi_core_process = kwargs.get('multi_core_process', False)
     return_ray_origin = kwargs.get('return_ray_origin', False)
-    return_ray_dir= kwargs.get('return_ray_dir', False)
+    return_ray_dir = kwargs.get('return_ray_dir', False)
 
     # compare voxel size and tolerance and warn if it is not enough
     if min(unit) * 1e-06 < tol:
@@ -205,7 +205,7 @@ def intersect(face_vertices_xyz, unit, mesh_bb_size, ray_orig,
         # travel) this line has a problem given the negative indices
         # are included now
         # plus unit added in case of flat meshes
-        dest_pos = orig_pos + direction * mesh_bb_size + unit
+        dest_pos = orig_pos + direction * (mesh_bb_size + unit)
 
         # intersection
         # Translated from Pirouz C#

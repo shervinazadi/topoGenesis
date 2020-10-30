@@ -597,7 +597,7 @@ class cloud(np.ndarray):
         # return vertices as cloud
         return cls(vertices)
 
-    def voxelate(self, unit, **kwargs):
+    def voxelate(self, unit, tol=1e-06, **kwargs):
         """ will voxelate the pointcloud based on a given unit size and returns 
         a boolean lattice that describes which cells of the discrete space 
         contained at least one point 
@@ -628,15 +628,16 @@ class cloud(np.ndarray):
         if closed:
             # R3 to Z3 : finding the closest voxel to each point
             point_scaled = self / unit
-            # shift the hit points in each 2-dimension (n in 1-axes) backward and forward (s in [-1,1]) and rint all the possibilities
+            # shift the hit points in each 2-dimension (n in 1-axes)
             shifts = np.array(list(itertools.product([-1, 0, 1], repeat=3)))
             shifts_steps = np.sum(np.absolute(shifts), axis=1)
             chosen_shift_ind = np.argwhere(shifts_steps == 3).ravel()
             sel_shifts = shifts[chosen_shift_ind]
 
-            vox_ind = [np.rint(point_scaled + unit * s * 0.00001)
+            vox_ind = [np.rint(point_scaled + s * tol)
                        for s in sel_shifts]
             vox_ind = np.vstack(vox_ind)
+
         else:
             vox_ind = np.rint(self / unit).astype(int)
 
@@ -662,7 +663,7 @@ class cloud(np.ndarray):
 
         return l
 
-    def fast_vis(self, plot):
+    def fast_vis(self, plot, color='#2499ff'):
         """ Adds the pointcloud to a pyvista plotter and returns it. 
         It is mainly used to rapidly visualize the point cloud
 
@@ -678,14 +679,14 @@ class cloud(np.ndarray):
         """
         # adding the original point cloud: blue
         plot.add_mesh(pv.PolyData(self),
-                      color='#2499ff',
+                      color=color,
                       point_size=3,
                       render_points_as_spheres=True,
                       label="Point Cloud")
 
         return plot
 
-    def fast_notebook_vis(self, plot):
+    def fast_notebook_vis(self, plot, color='#2499ff'):
         """ Adds the pointcloud to a pyvista ITK plotter and returns it. 
         ITK plotters are specifically used in notebooks to plot the geometry inside 
         the notebook environment It is mainly used to rapidly visualize the content 
@@ -702,7 +703,7 @@ class cloud(np.ndarray):
             cloud.fast_notebook_vis(p)
         """
         # adding the original point cloud: blue
-        plot.add_points(pv.PolyData(self), color='#2499ff')
+        plot.add_points(pv.PolyData(self), color=color)
 
         return plot
 

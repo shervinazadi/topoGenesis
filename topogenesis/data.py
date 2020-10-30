@@ -335,21 +335,23 @@ class cloud(np.ndarray):
             # shift the hit points in each 2-dimension (n in 1-axes) backward and formard (s in [-1,1]) and rint all the possibilities
             vox_ind = [np.rint(point_scaled + unit * n * s * 0.001)
                        for n in (1-axes) for s in [-1, 1]]
+            print([unit * n * s for n in (1-axes) for s in [-1, 1]])
             vox_ind = np.vstack(vox_ind)
+            print("close")
         else:
             vox_ind = np.rint(self / unit).astype(int)
-
+        print("here")
         # removing repetitions
         unique_vox_ind = np.unique(vox_ind, axis=0).astype(int)
 
-        # mapping the voxel indicies to real space
+        # mapping the voxel indices to real space
         reg_pnt = unique_vox_ind * unit
 
         # initializing the volume
         l = lattice([self.minbound, self.maxbound], unit=unit,
                     dtype=bool, default_value=False)
 
-        # mapp the indicies to start from zero
+        # map the indices to start from zero
         mapped_ind = unique_vox_ind - np.rint(l.bounds[0]/l.unit).astype(int)
 
         # setting the occupied voxels to True
