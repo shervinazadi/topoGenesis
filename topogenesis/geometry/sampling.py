@@ -53,6 +53,7 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     dim_num = unit.size
     multi_core_process = kwargs.get('multi_core_process', False)
     return_ray_origin = kwargs.get('return_ray_origin', False)
+    return_ray_dir= kwargs.get('return_ray_dir', False)
 
     # compare voxel size and tolerance and warn if it is not enough
     if min(unit) * 1e-06 < tol:
@@ -159,10 +160,16 @@ def mesh_sampling(mesh, unit, tol=1e-06, **kwargs):
     ####################################################
 
     # set the output list
-    out = [cloud(np.array(samples))]
+    if len(samples) != 0:
+        out = [cloud(np.array(samples))]
+    else:
+        out = [None]
     # check if the ray origins are requested
     if return_ray_origin:
         out.append(cloud(np.array(ray_orig)))
+    # check if the ray direction are requested
+    if return_ray_dir:
+        out.append(ray_dir)
 
     # if the list has more than one item, return it as a tuple, if it
     # has only one item, return the item itself
@@ -197,7 +204,8 @@ def intersect(face_vertices_xyz, unit, mesh_bb_size, ray_orig,
         # calc the destination of ray (max distance that it needs to
         # travel) this line has a problem given the negative indices
         # are included now
-        dest_pos = orig_pos + direction * mesh_bb_size
+        # plus unit added in case of flat meshes
+        dest_pos = orig_pos + direction * mesh_bb_size + unit
 
         # intersection
         # Translated from Pirouz C#
@@ -306,7 +314,6 @@ def surface_normal_newell_vectorized(poly):
         n[1] += (poly[i][2] - poly[j][2]) * (poly[i][0] + poly[j][0])
         n[2] += (poly[i][0] - poly[j][0]) * (poly[i][1] + poly[j][1])
     """
-
     poly_10 = np.roll(poly, [-1, 0], np.arange(2))
     poly_01 = np.roll(poly, [0, -1], np.arange(2))
     poly_11 = np.roll(poly, [-1, -1], np.arange(2))

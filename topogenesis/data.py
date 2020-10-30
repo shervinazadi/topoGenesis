@@ -361,18 +361,18 @@ class cloud(np.ndarray):
 
         return l
 
-    def fast_vis(self, plot):
+    def fast_vis(self, plot, color='#2499ff'):
 
         # adding the original point cloud: blue
-        plot.add_mesh(pv.PolyData(self), color='#2499ff', point_size=3,
+        plot.add_mesh(pv.PolyData(self), color=color, point_size=3,
                       render_points_as_spheres=True, label="Point Cloud")
 
         return plot
 
-    def fast_notebook_vis(self, plot):
+    def fast_notebook_vis(self, plot, color='#2499ff'):
 
         # adding the original point cloud: blue
-        plot.add_points(pv.PolyData(self), color='#2499ff')
+        plot.add_points(pv.PolyData(self), color=color)
 
         return plot
 
