@@ -1,4 +1,4 @@
-## Installation
+# Installation
 
 1. create a virtual environment using conda
 
