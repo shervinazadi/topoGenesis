@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/shervinazadi/topoGenesis/branch/master/graph/badge.svg)](https://codecov.io/gh/shervinazadi/topoGenesis)
 [![GitHub - License](https://img.shields.io/github/license/compas-dev/compas.svg)](https://github.com/compas-dev/compas)
 [![DOI](https://zenodo.org/badge/268286072.svg)](https://zenodo.org/badge/latestdoi/268286072)
+![Read the Docs](https://img.shields.io/readthedocs/topogenesis?color=purple)
 
 [topoGenesis](https://github.com/shervinazadi/topoGenesis) is an open-source python package that provides topological structures and functions for Generative Systems and Sciences for various application areas such as:
 
@@ -48,35 +49,7 @@ topoGenesis aims to utilize the vast functionalities of fields (mathematical obj
 
 ## Installation
 
-1. create a virtual environment using conda
-
-```bash
-conda env create -f environment.yml
-```
-
-2. activate the environment
-
-```bash
-conda activate genesis
-```
-
-3. install topogenesis locally within your environment with a symlink:
-
-```bash
-python -m pip install -e .
-```
-
-Ensure that the pip install is run from the python of the same conda environment (genesis): thus, first, navigate to that environment and type "python -m pip install -e". The addition -e uses the "symlink" module from pip ecosystem to ensure that a work-in-progress library is always updated from the latest source.
-
-### VS Code Setup
-
-to make sure that the terminal inside VS Code is using the same python as your conda environment (before step 4), make sure to copy the following in the settings.json
-
-```JSON
-"terminal.integrated.env.osx": {
-            "PATH": ""
-    }
-```
+for installation check [this tutorial](https://topogenesis.readthedocs.io/installation/)
 
 ## Genesis Lab: Laboratory of Generative Systems and Sciences
 
