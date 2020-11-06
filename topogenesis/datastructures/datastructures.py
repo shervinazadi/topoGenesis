@@ -613,7 +613,7 @@ class cloud(np.ndarray):
         # return vertices as cloud
         return cls(vertices)
 
-    def voxelate(self, unit, **kwargs):
+    def voxelate(self, unit, tol=1e-6, **kwargs):
         """will voxelate the pointcloud based on a given unit size and returns a boolean lattice that describes which cells of the discrete space contained at least one point 
 
         Args:

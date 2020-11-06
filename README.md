@@ -4,7 +4,8 @@
 [![codecov](https://codecov.io/gh/shervinazadi/topoGenesis/branch/master/graph/badge.svg)](https://codecov.io/gh/shervinazadi/topoGenesis)
 [![GitHub](https://img.shields.io/github/license/shervinazadi/topogenesis)](https://github.com/shervinazadi/topogenesis)
 [![DOI](https://zenodo.org/badge/268286072.svg)](https://zenodo.org/badge/latestdoi/268286072)
-[![Read the Docs](https://img.shields.io/readthedocs/topogenesis?color=purple)](https://topogenesis.readthedocs.io)
+[![Documentation Status](https://readthedocs.org/projects/topogenesis/badge/?version=latest)](https://topogenesis.readthedocs.io/?badge=latest)
+
 
 [topoGenesis](https://github.com/shervinazadi/topoGenesis) is an open-source python package that provides topological structures and functions for Generative Systems and Sciences for various application areas such as:
 
