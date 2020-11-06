@@ -20,7 +20,10 @@ nav:
   - Installation: "installation.md"
   - Tutorials: "tutorials.md"
   - API:
-      - "Data Structures": "api/datastructures.md"
+      - Data Structures:
+          - Lattice: api/datastructures/lattice.md
+          - Stencil: api/datastructures/stencil.md
+          - Cloud: api/datastructures/cloud.md
       - "Geometry": "api/geometry.md"
   - About:
       - "License": "license.md"

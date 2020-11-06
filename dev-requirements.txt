@@ -4,7 +4,6 @@
 click==7.1.2
 compas==0.16.2
 coverage==5.3
-docutils==0.16
 itkwidgets==0.32.0
 networkx==2.5
 numpy==1.19.1
@@ -15,5 +14,3 @@ python==3.8.5
 pyvista==0.26.0
 scipy==1.5.2
 setuptools==49.6.0
-sphinx==3.2.1
-sphinx-glpi-theme==0.3
