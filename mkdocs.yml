@@ -1,0 +1,27 @@
+site_name: topoGenesis
+theme:
+  name: "material"
+  palette:
+    - scheme: slate
+      primary: deep purple
+      accent: purple
+plugins:
+  - search
+  - mkdocstrings:
+      watch:
+        - topogenesis
+      handlers:
+        python:
+          selection:
+            filters:
+              - "!^_" # exlude all members starting with _
+nav:
+  - Home: "index.md"
+  - Installation: "installation.md"
+  - Tutorials: "tutorials.md"
+  - API:
+      - "Data Structures": "api/datastructures.md"
+      - "Geometry": "api/geometry.md"
+  - About:
+      - "License": "license.md"
+      - "Citing": "citing.md"
