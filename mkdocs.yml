@@ -7,6 +7,7 @@ theme:
       accent: purple
 plugins:
   - search
+  - mknotebooks
   - mkdocstrings:
       watch:
         - topogenesis
@@ -18,7 +19,8 @@ plugins:
 nav:
   - Home: "index.md"
   - Installation: "installation.md"
-  - Tutorials: "tutorials.md"
+  - Tutorials:
+      - PointCloud Voxelization: notebooks/point_cloud_voxelization.ipynb
   - API:
       - Data Structures:
           - Lattice: api/datastructures/lattice.md

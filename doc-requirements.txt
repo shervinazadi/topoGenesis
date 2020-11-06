@@ -3,3 +3,4 @@ pandas
 pyvista
 mkdocs-material
 mkdocstrings
+mknotebooks

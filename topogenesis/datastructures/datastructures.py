@@ -670,7 +670,7 @@ class cloud(np.ndarray):
 
         return l
 
-    def fast_vis(self, plot):
+    def fast_vis(self, plot, color="#66beed"):
         """Adds the pointcloud to a pyvista plotter and returns it. 
         It is mainly used to rapidly visualize the point cloud
 
@@ -696,7 +696,7 @@ class cloud(np.ndarray):
 
         return plot
 
-    def fast_notebook_vis(self, plot):
+    def fast_notebook_vis(self, plot, color="#66beed"):
         """Adds the pointcloud to a pyvista ITK plotter and returns it. ITK plotters are specifically used in notebooks to plot the geometry inside the notebook environment It is mainly used to rapidly visualize the content of the lattice for visual confirmation
 
         Args:
