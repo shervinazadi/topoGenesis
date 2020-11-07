@@ -1,0 +1,11 @@
+/* Input cells */
+.input code,
+.input pre {
+  background-color: #42428b11;
+}
+
+/* Output cells */
+.output pre {
+  background-color: #3333aa11;
+  padding: 10px;
+}

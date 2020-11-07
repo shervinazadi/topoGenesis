@@ -4,10 +4,29 @@ theme:
   palette:
     - scheme: slate
       primary: deep purple
+      accent: deep purple
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: default
+      primary: purple
       accent: purple
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - search.suggest
+    - navigation.sections
+
 plugins:
-  - search
-  - mknotebooks
+  - search:
+      prebuild_index: true
+  - mknotebooks:
+      enable_default_jupyter_cell_styling: false
+      enable_default_pandas_dataframe_styling: false
+      # write_markdown: true
   - mkdocstrings:
       watch:
         - topogenesis
@@ -30,3 +49,10 @@ nav:
   - About:
       - "License": "license.md"
       - "Citing": "citing.md"
+
+repo_url: https://github.com/shervinazadi/topogenesis
+repo_name: topoGenesis
+markdown_extensions:
+  - codehilite
+extra_css:
+  - stylesheets/extra.css
