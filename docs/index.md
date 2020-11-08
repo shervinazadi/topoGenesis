@@ -14,7 +14,18 @@ For full documentation visit [mkdocs.org](https://www.mkdocs.org).
     mkdocs.yml    # The configuration file.
     docs/
         index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files. -->
+        ...       # Other markdown pages, images and other files. 
+
+# MathJax examples 
+The homomorphism $f$ is injective if and only if its kernel is only the 
+singleton set $e_G$, because otherwise $\exists a,b\in G$ with $a\neq b$ such 
+that $f(a)=f(b)$.
+
+$$
+\operatorname{ker} f=\{g\in G:f(g)=e_{H}\}{\mbox{.}}
+$$
+
+-->
 
 # topoGenesis
 
