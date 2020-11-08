@@ -1,4 +1,24 @@
 site_name: topoGenesis
+repo_url: https://github.com/shervinazadi/topogenesis
+repo_name: topoGenesis
+
+nav:
+  - Home: "index.md"
+  - Installation: "installation.md"
+  - Tutorials:
+      - PointCloud Voxelization: notebooks/point_cloud_voxelization.ipynb
+      - Mesh Sampling: notebooks/mesh_sampling.ipynb
+      - Stencils: notebooks/stencil_functionalities.ipynb
+  - API:
+      - Data Structures:
+          - Lattice: api/datastructures/lattice.md
+          - Stencil: api/datastructures/stencil.md
+          - Cloud: api/datastructures/cloud.md
+      - "Geometry": "api/geometry.md"
+  - About:
+      - "License": "license.md"
+      - "Citing": "citing.md"
+
 theme:
   name: "material"
   palette:
@@ -14,8 +34,10 @@ theme:
       toggle:
         icon: material/toggle-switch
         name: Switch to light mode
+
   icon:
     repo: fontawesome/brands/github
+
   features:
     - search.suggest
     - navigation.sections
@@ -35,30 +57,15 @@ plugins:
           selection:
             filters:
               - "!^_" # exlude all members starting with _
-nav:
-  - Home: "index.md"
-  - Installation: "installation.md"
-  - Tutorials:
-      - PointCloud Voxelization: notebooks/point_cloud_voxelization.ipynb
-      - Mesh Sampling: notebooks/mesh_sampling.ipynb
-  - API:
-      - Data Structures:
-          - Lattice: api/datastructures/lattice.md
-          - Stencil: api/datastructures/stencil.md
-          - Cloud: api/datastructures/cloud.md
-      - "Geometry": "api/geometry.md"
-  - About:
-      - "License": "license.md"
-      - "Citing": "citing.md"
 
-repo_url: https://github.com/shervinazadi/topogenesis
-repo_name: topoGenesis
 markdown_extensions:
   - codehilite
   - pymdownx.arithmatex:
       generic: true
+
 extra_css:
   - stylesheets/extra.css
+
 extra_javascript:
   - javascripts/config.js
   - https://polyfill.io/v3/polyfill.min.js?features=es6
