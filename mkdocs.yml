@@ -9,8 +9,9 @@ nav:
       - Basic:
           - Stencils: notebooks/stencil_functionalities.ipynb
       - Workflows:
-          - PointCloud Voxelization: notebooks/point_cloud_voxelization.ipynb
+          - Point Cloud Voxelization: notebooks/point_cloud_voxelization.ipynb
           - Mesh Sampling: notebooks/mesh_sampling.ipynb
+          - Boolean Marching Cubes: notebooks/boolean_marching_cubes.ipynb
       - Simulations:
           - Cellular Automata: notebooks/cellular_automata.ipynb
           - ABM Random Walker: notebooks/random_walker.ipynb
