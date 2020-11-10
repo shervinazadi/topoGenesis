@@ -6,9 +6,14 @@ nav:
   - Home: "index.md"
   - Installation: "installation.md"
   - Tutorials:
-      - PointCloud Voxelization: notebooks/point_cloud_voxelization.ipynb
-      - Mesh Sampling: notebooks/mesh_sampling.ipynb
-      - Stencils: notebooks/stencil_functionalities.ipynb
+      - Basic:
+          - Stencils: notebooks/stencil_functionalities.ipynb
+      - Workflows:
+          - PointCloud Voxelization: notebooks/point_cloud_voxelization.ipynb
+          - Mesh Sampling: notebooks/mesh_sampling.ipynb
+      - Simulations:
+          - Cellular Automata: notebooks/cellular_automata.ipynb
+
   - API:
       - Data Structures:
           - Lattice: api/datastructures/lattice.md
