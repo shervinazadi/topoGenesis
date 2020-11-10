@@ -105,14 +105,22 @@ dependencies:
   - zstandard=0.14.0=py38h11c0d25_2
   - zstd=1.4.5=h289c70a_2
   - pip:
-      - appdirs==1.4.4
-      - imageio==2.9.0
-      - itk-core==5.1.1.post1
-      - itk-filtering==5.1.1.post1
-      - itk-numerics==5.1.1.post1
-      - itk-registration==5.1.1.post1
-      - itk-segmentation==5.1.1.post1
-      - meshio==4.3.2
-      - pyvista==0.26.1
-      - scooby==0.5.6
-      - vtk==9.0.1
+    - appdirs==1.4.4
+    - chardet==3.0.4
+    - idna==2.10
+    - imageio==2.9.0
+    - itk-core==5.1.1.post1
+    - itk-filtering==5.1.1.post1
+    - itk-numerics==5.1.1.post1
+    - itk-registration==5.1.1.post1
+    - itk-segmentation==5.1.1.post1
+    - json5==0.9.5
+    - jupyterlab==2.2.9
+    - jupyterlab-server==1.2.0
+    - meshio==4.3.2
+    - pyvista==0.27.0
+    - requests==2.24.0
+    - scooby==0.5.6
+    - urllib3==1.25.11
+    - vtk==9.0.1
+prefix: /Users/shervinazadi/opt/miniconda3/envs/genesis
