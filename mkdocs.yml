@@ -13,6 +13,7 @@ nav:
           - Mesh Sampling: notebooks/mesh_sampling.ipynb
       - Simulations:
           - Cellular Automata: notebooks/cellular_automata.ipynb
+          - ABM Random Walker: notebooks/random_walker.ipynb
 
   - API:
       - Data Structures:
