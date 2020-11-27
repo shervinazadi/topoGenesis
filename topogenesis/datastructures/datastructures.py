@@ -458,7 +458,7 @@ class lattice(np.ndarray):
         return to_lattice(arg_applied_3d_trimmed, self)
 
     def find_neighbours(self, stencil, order: str = "dist"):
-        """Given an stencil, this method will return the neighbours of the cell with regard to the stencil specification in a numpy 2D array with each row corresponding to one cell in lattice.
+        """Given an stencil, this method will return the neighbours of all cells with regard to the stencil specification in a numpy 2D array with each row corresponding to one cell in lattice.
 
         Args:
             stencil (topogenesis.Stencil): Stencil that describes the neighbourhood
@@ -467,6 +467,7 @@ class lattice(np.ndarray):
         Returns:
             numpy.ndarray:  2D array describing the neighbours of each cell in the row
         """
+        # TODO: kwarg for returning 1d or 3d indices
         # the id of voxels (0,1,2, ... n)
         self_ind = self.indices
 
@@ -482,8 +483,25 @@ class lattice(np.ndarray):
 
         return cell_neighbors
 
-    def find_neighbours_masked(self, stencil, order="dist", mask=None, loc=None, border_condition="standard"):
+    def find_neighbours_masked(self, stencil, loc, order="dist", mask=None, border_condition="standard", id_type="1D"):
+        """Given an stencil, this method will return the neighbours of one specific cell (specified with loc) with regard to the neighbourhood that stencil defines. The neighbours can be returned with 1D or 3D indices
 
+        Args:
+            stencil (topogenesis.Stencil): Stencil that describes the neighbourhood
+            loc (numpy.ndarray): The location (3D index) of the cells that it's neighbours are desired.
+            order (str, optional): the order of neighbours is one of {"dist", "C", "F"}. 'dist' sorts the neighbours based on the distance from origin cell, ‘C’ sorts in row-major (C-style) order, and ‘F’ sorts in column-major (Fortran- style) order. defaults to "dist"
+            mask (numpy.ndarray, optional): Not implemented yet. Defaults to None.
+            border_condition (str, optional): 
+                specifies how the border condition should be treated. The options are {"standard", "roll"}. "standard" will assume that the cells at the border of bound of the lattice and they have less neighbours compared to the cells in the middle of the lattice. "roll" will assume that the end of each dimension is connected to the beginning of it and interprets the connectivity of the lattice with a rolling approach; the resultant lattice has the same shape is the original lattice. defaults to "standard"
+            id_type (str, optional): specifies how the neighbours are specified and returened. The options are {"1D", "3D"}. "1D" will return a one-dimensional index of the cell, similar to the index that is assigned to each cell when lattice.indices is called. "3D" will return the three-dimensional index of the cell which is the integer coordinates of the cell as well. Defaults to "1D".
+
+        Raises:
+            NotImplementedError: in case that "roll" option is chosen for "border_condition"
+            NotImplementedError: in case that "mask" option is used
+
+        Returns:
+            numpy.ndarray: array of the indices of the neighbours.
+        """
         # the id of voxels (0,1,2, ... n)
         self_ind = self.indices
 
@@ -495,7 +513,13 @@ class lattice(np.ndarray):
             win_min = np.maximum(win_min, np.array([0, 0, 0]))
             # ensure win_max is not more than shape -1
             win_max = np.minimum(win_max, np.array(self_ind.shape))
+
+        # TODO
         if border_condition == "roll":
+            raise NotImplementedError
+
+        # TODO
+        if mask != None:
             raise NotImplementedError
 
         self_ind = self_ind[win_min[0]: win_max[0],
@@ -517,7 +541,17 @@ class lattice(np.ndarray):
         # stacking the columns
         cell_neighbors = np.stack(replaced_columns, axis=-1)
 
-        return cell_neighbors[new_loc_ind]
+        # extract 1D ids
+        neighs_1d_id = cell_neighbors[new_loc_ind]
+
+        if id_type == "1D":
+            return neighs_1d_id
+
+        elif id_type == "3D":
+            # convert 1D index to 3D index
+            neigh_3d_id = np.array(
+                np.unravel_index(neighs_1d_id, self.shape)).T
+            return neigh_3d_id
 
 
 class cloud(np.ndarray):
