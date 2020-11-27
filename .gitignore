@@ -153,3 +153,4 @@ dmypy.json
 
 src/topogenesis.egg-info/*
 .cc_token
+.ipynb_checkpoints
