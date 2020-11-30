@@ -11,7 +11,7 @@ import concurrent.futures
 import warnings
 import os
 
-from .datastructures import stencil, cloud, lattice
+from .datastructures import stencil, cloud, lattice, to_lattice
 
 __author__ = "Shervin Azadi, and Pirouz Nourian"
 __copyright__ = "???"
@@ -51,6 +51,8 @@ def cloud_from_mesh_vertices(mesh_path):
     return cloud(v)
 
 
+# extra import function
+# TODO: this function is updated make sure that it is functioning properly
 def lattice_from_csv(file_path):
     # read metadata
     meta_df = pd.read_csv(file_path, nrows=3)
@@ -66,10 +68,7 @@ def lattice_from_csv(file_path):
     buffer = np.array(lattice_df['value']).reshape(shape)
 
     # create the lattice
-    l = lattice([minbound, minbound + unit * (shape - 1)],
-                unit=unit,
-                dtype=bool,
-                buffer=buffer)
+    l = to_lattice(buffer, minbound=minbound, unit=unit)
 
     return l
 
