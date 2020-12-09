@@ -282,7 +282,7 @@ class lattice(np.ndarray):
         with open(filepath, 'w') as df_out:
 
             metadata.to_csv(df_out, index=False,
-                            header=True, float_format='%g')
+                            header=True, float_format='%g', line_terminator='n')
 
             df_out.write('\n')
 
