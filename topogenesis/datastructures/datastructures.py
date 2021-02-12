@@ -270,7 +270,7 @@ class lattice(np.ndarray):
             filepath: path to the csv file
         """
         # volume to panda dataframe
-        vol_df = self.to_panadas()
+        vol_df = self.to_pandas()
 
         # specifying metadata and transposing it
         metadata = pd.DataFrame({
@@ -290,7 +290,7 @@ class lattice(np.ndarray):
                           index=False,
                           float_format='%g', line_terminator='\n')
 
-    def to_panadas(self):
+    def to_pandas(self):
         """This methods returns a pandas dataframe containing the lattice information with integer indices and value of the cell as columns.
 
         Returns:

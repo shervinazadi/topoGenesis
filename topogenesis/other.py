@@ -94,7 +94,7 @@ def pnts_to_csv(pnts, filepath, **kwargs):
         pnts_df.to_csv(df_out, index=True, float_format='%g')
 
 
-def vol_to_panadas(vol):
+def vol_to_pandas(vol):
     # get the indices of the voxels
     vol_3d_ind = np.indices(vol.shape)
 
@@ -119,7 +119,7 @@ def vol_to_csv(vol, filepath, **kwargs):
     metadata = kwargs.get('metadata', None)
     metawrite = False if metadata is None else True
     # volume to panda dataframe
-    vol_df = vol_to_panadas(vol)
+    vol_df = vol_to_pandas(vol)
     # panada-dataframe to csv
 
     with open(filepath, 'w') as df_out:
