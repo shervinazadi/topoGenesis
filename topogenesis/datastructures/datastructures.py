@@ -115,6 +115,27 @@ class lattice(np.ndarray):
         # return as a point cloud
         return cloud(point_array, dtype=float)
 
+    def centroids_threshold(self, threshold=0.0):
+        """Extracts the centroid of cells that have a positive or True value and returns them as a point cloud
+
+        Args:
+            threshold (float, optional): exclusive lower bound of the values to assume existence of the voxel. Defaults to 0.0.
+
+        Returns:
+            topogenesis.Cloud: a point cloud representing the centroids of the lattice cells
+        """
+
+        # extract the indices of the True values # with sparse matrix we don't need to search
+        point_array = np.argwhere(self > threshold)
+        # convert to float
+        point_array = point_array.astype(float)
+        # scale by unit
+        point_array *= self.unit
+        # translate by minimum
+        point_array += self.minbound
+        # return as a point cloud
+        return cloud(point_array, dtype=float)
+
     @property
     def indices(self):
         """Creates one-dimensional integer indices for cells in the lattice
