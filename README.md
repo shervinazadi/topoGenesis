@@ -4,6 +4,7 @@
 [![codecov](https://codecov.io/gh/shervinazadi/topoGenesis/branch/master/graph/badge.svg)](https://codecov.io/gh/shervinazadi/topoGenesis)
 [![GitHub](https://img.shields.io/github/license/shervinazadi/topogenesis)](https://github.com/shervinazadi/topogenesis)
 [![Documentation Status](https://readthedocs.org/projects/topogenesis/badge/?version=latest)](https://topogenesis.readthedocs.io/?badge=latest)
+[![DOI](https://zenodo.org/badge/268286072.svg)](https://zenodo.org/badge/latestdoi/268286072)
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4006514.svg)](https://doi.org/10.5281/zenodo.4006514)
 
