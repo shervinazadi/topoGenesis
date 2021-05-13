@@ -3,8 +3,9 @@
 [![Build Status](https://travis-ci.org/shervinazadi/topoGenesis.svg?branch=master)](https://travis-ci.org/shervinazadi/topoGenesis)
 [![codecov](https://codecov.io/gh/shervinazadi/topoGenesis/branch/master/graph/badge.svg)](https://codecov.io/gh/shervinazadi/topoGenesis)
 [![GitHub](https://img.shields.io/github/license/shervinazadi/topogenesis)](https://github.com/shervinazadi/topogenesis)
-[![DOI](https://zenodo.org/badge/268286072.svg)](https://zenodo.org/badge/latestdoi/268286072)
 [![Documentation Status](https://readthedocs.org/projects/topogenesis/badge/?version=latest)](https://topogenesis.readthedocs.io/?badge=latest)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4006514.svg)](https://doi.org/10.5281/zenodo.4006514)
+
 
 
 [topoGenesis](https://topogenesis.readthedocs.io/) is an open-source python package providing topological data structures and functions for working with voxel data in Generative Systems and Sciences. The envisaged application areas are:
