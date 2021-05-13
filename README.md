@@ -7,7 +7,7 @@
 [![Documentation Status](https://readthedocs.org/projects/topogenesis/badge/?version=latest)](https://topogenesis.readthedocs.io/?badge=latest)
 
 
-[topoGenesis](https://topogenesis.readthedocs.io/) is an open-source python package that provides topological structures and functions for Generative Systems and Sciences for various application areas such as:
+[topoGenesis](https://topogenesis.readthedocs.io/) is an open-source python package providing topological data structures and functions for working with voxel data in Generative Systems and Sciences. The envisaged application areas are:
 
 - generative design in architecture and built environment
 - generative spatial simulations
