@@ -24,6 +24,7 @@ class lattice(np.ndarray):
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
                 strides=None, order=None, default_value=None, orient=[0., 0., 0., 1.]):
 
+        # TODO: Add documentation for orient
         # extracting min and max from bound and discrtizing it
         bounds = np.array(bounds)
         minbound = np.rint(bounds[0] / unit).astype(int)
@@ -158,7 +159,7 @@ class lattice(np.ndarray):
         ind = np.arange(self.size).reshape(self.shape)
         return to_lattice(ind.astype(int), self)
 
-    def fast_vis(self, plot, show_outline: bool = True, show_centroids: bool = True):
+    def fast_vis(self, plot, show_outline: bool = True, show_centroids: bool = True, color = "#ff8fa3", opacity=0.3):
         """Adds the basic lattice features to a pyvista plotter and returns it. 
         It is mainly used to rapidly visualize the content of the lattice 
         for visual confirmation
@@ -177,6 +178,8 @@ class lattice(np.ndarray):
         lattice.fast_vis(p)
         ```
         """
+        # TODO: Add documentation for color and opacity
+
         # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
         grid = pv.UniformGrid()
         grid.dimensions = np.array(self.shape) + 1
@@ -189,13 +192,21 @@ class lattice(np.ndarray):
         # filtering the voxels
         threshed = grid.threshold([0.9, 1.1])
 
+        # applying the orientation of the lattice
+        if np.sum(np.abs(self.orient[:3])) > 0.001 or self.orient[3] != 1: # check if the orientation is required
+            Rz = sp_rotation.from_quat(self.orient)
+            threshed.points = Rz.apply(threshed.points)
+
         # adding the voxels: light red
-        plot.add_mesh(threshed, show_edges=True, color="#ff8fa3",
-                      opacity=0.3, label="Cells")
+        plot.add_mesh(threshed, show_edges=True, color=color,
+                      opacity=opacity, label="Cells")
 
         if show_outline:
             # adding the boundingbox wireframe
-            plot.add_mesh(grid.outline(), color="grey", label="Domain")
+            wireframe = grid.outline()
+            Rz = sp_rotation.from_quat(self.orient)
+            wireframe.points = Rz.apply(wireframe.points)
+            plot.add_mesh(wireframe, color="grey", label="Domain")
 
         if show_centroids:
             # adding the voxel centroids: red
