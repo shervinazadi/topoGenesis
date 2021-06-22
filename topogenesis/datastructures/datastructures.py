@@ -215,6 +215,62 @@ class lattice(np.ndarray):
 
         return plot
 
+    def fast_volumetric_vis(self, plot, show_outline: bool = True, show_centroids: bool = True, cmap="coolwarm", clim=[0.5, 1.0], opacity=np.array([0,0.9,0.9,0.9,0.9,0.9,0.9]), value_tag="Value"):
+
+        # TODO: Add doc strings
+
+        # Create the spatial reference
+        grid = pv.UniformGrid()
+
+        # Set the grid dimensions: shape because we want to inject our values
+        grid.dimensions = self.shape
+        # The bottom left corner of the data set
+        grid.origin = self.minbound
+        # These are the cell sizes along each axis
+        grid.spacing = self.unit
+
+        # Add the data values to the cell data
+        grid.point_arrays[value_tag] = self.flatten(order="F")  # Flatten the Lattice
+
+            
+        # adding the volume
+        plot.add_volume(grid, cmap=cmap, clim=clim,opacity=opacity, shade=True)
+
+        # # Set the grid dimensions: shape + 1 because we want to inject our values on the CELL data
+        # grid = pv.UniformGrid()
+        # grid.dimensions = np.array(self.shape) + 1
+        # # The bottom left corner of the data set
+        # grid.origin = self.minbound - self.unit * 0.5
+        # grid.spacing = self.unit  # These are the cell sizes along each axis
+        # # Add the data values to the cell data
+        # grid.cell_arrays["values"] = self.flatten(
+        #     order="F").astype(float)  # Flatten the array!
+        # # filtering the voxels
+        # threshed = grid.threshold([0.9, 1.1])
+
+        # # applying the orientation of the lattice
+        # if np.sum(np.abs(self.orient[:3])) > 0.001 or self.orient[3] != 1: # check if the orientation is required
+        #     Rz = sp_rotation.from_quat(self.orient)
+        #     threshed.points = Rz.apply(threshed.points)
+
+        # # adding the voxels: light red
+        # plot.add_mesh(threshed, show_edges=True, color=color,
+        #               opacity=opacity, label="Cells")
+
+        # if show_outline:
+        #     # adding the boundingbox wireframe
+        #     wireframe = grid.outline()
+        #     Rz = sp_rotation.from_quat(self.orient)
+        #     wireframe.points = Rz.apply(wireframe.points)
+        #     plot.add_mesh(wireframe, color="grey", label="Domain")
+
+        # if show_centroids:
+        #     # adding the voxel centroids: red
+        #     plot.add_mesh(pv.PolyData(self.centroids), color='#ff244c', point_size=5,
+        #                   render_points_as_spheres=True, label="Cell Centroids")
+
+        return plot
+
     def fast_notebook_vis(self, plot, show_outline: bool = True, show_centroids: bool = True):
         """Adds the basic lattice features to a pyvista ITK plotter and returns it. 
         ITK plotters are specifically used in notebooks to plot the geometry inside 
