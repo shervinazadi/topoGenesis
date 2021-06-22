@@ -2,7 +2,7 @@
 """
 topoGenesis DataStructure
 """
-
+from scipy.spatial.transform import Rotation as sp_rotation
 import numpy as np
 import pandas as pd
 import pyvista as pv
@@ -22,7 +22,7 @@ class lattice(np.ndarray):
     """
 
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
-                strides=None, order=None, default_value=None):
+                strides=None, order=None, default_value=None, orient=[0., 0., 0., 1.]):
 
         # extracting min and max from bound and discrtizing it
         bounds = np.array(bounds)
@@ -57,6 +57,8 @@ class lattice(np.ndarray):
         obj.bounds = bounds
         # set the attribute 'unit' to itself
         obj.unit = unit
+        # set the 'orient' attribute
+        obj.orient = orient
 
         # init an empty connectivity
         obj.connectivity = None
@@ -72,6 +74,7 @@ class lattice(np.ndarray):
         self.bounds = getattr(obj, 'bounds', None)
         self.bounds = getattr(obj, 'bounds', None)
         self.unit = getattr(obj, 'unit', None)
+        self.orient = getattr(obj, 'orient', None)
         self.connectivity = getattr(obj, 'connectivity', None)
         # TODO need to add the origin atribute
 
@@ -112,6 +115,10 @@ class lattice(np.ndarray):
         point_array *= self.unit
         # translate by minimum
         point_array += self.minbound
+        # orient the points
+        if np.sum(np.abs(self.orient[:3])) > 0.001 or self.orient[3] != 1: # check if the orientation is required
+            r = sp_rotation.from_quat(self.orient)
+            point_array = r.apply(point_array)
         # return as a point cloud
         return cloud(point_array, dtype=float)
 
@@ -133,6 +140,10 @@ class lattice(np.ndarray):
         point_array *= self.unit
         # translate by minimum
         point_array += self.minbound
+        # orient the points
+        if np.sum(np.abs(self.orient[:3])) > 0.001 or self.orient[3] != 1: # check if the orientation is required
+            r = sp_rotation.from_quat(self.orient)
+            point_array = r.apply(point_array)
         # return as a point cloud
         return cloud(point_array, dtype=float)
 
@@ -1000,7 +1011,7 @@ def create_stencil(type_str: str, steps: int, clip: int = None):
             'non-valid neighbourhood type for stencil creation')
 
 
-def to_lattice(a, minbound: np.ndarray, unit=1) -> lattice:
+def to_lattice(a, minbound: np.ndarray, unit=1, orient=[0., 0., 0., 1.]) -> lattice:
     """Converts a numpy array into a lattice
 
     Args:
@@ -1019,6 +1030,7 @@ def to_lattice(a, minbound: np.ndarray, unit=1) -> lattice:
         l = minbound
         unit = l.unit
         minbound = l.minbound
+        orient = l.orient
 
     # check if minbound is an np array
     elif type(minbound) is not np.ndarray:
@@ -1028,6 +1040,6 @@ def to_lattice(a, minbound: np.ndarray, unit=1) -> lattice:
     bounds = np.array([minbound, minbound + unit * (np.array(a.shape) - 1)])
 
     # construct a lattice
-    array_lattice = lattice(bounds, unit=unit, dtype=a.dtype)
+    array_lattice = lattice(bounds, unit=unit, dtype=a.dtype, orient=orient)
     array_lattice[:, :, :] = a[:, :, :]
     return array_lattice
