@@ -22,7 +22,7 @@ class lattice(np.ndarray):
     """
 
     def __new__(subtype, bounds, unit=1, dtype=float, buffer=None, offset=0,
-                strides=None, order=None, default_value=None, orient=[0., 0., 0., 1.]):
+                strides=None, order=None, default_value=None, orient=np.array([0., 0., 0., 1.])):
 
         # TODO: Add documentation for orient
         # extracting min and max from bound and discrtizing it
@@ -59,7 +59,7 @@ class lattice(np.ndarray):
         # set the attribute 'unit' to itself
         obj.unit = unit
         # set the 'orient' attribute
-        obj.orient = orient
+        obj.orient = np.array(orient)
 
         # init an empty connectivity
         obj.connectivity = None
@@ -216,7 +216,7 @@ class lattice(np.ndarray):
         return plot
 
     def fast_volumetric_vis(self, plot, show_outline: bool = True, show_centroids: bool = True, cmap="coolwarm", clim=[0.5, 1.0], opacity=np.array([0,0.9,0.9,0.9,0.9,0.9,0.9]), value_tag="Value"):
-
+        # TODO: resolve the orientation of the volumetric visualization
         # TODO: Add doc strings
 
         # Create the spatial reference
@@ -1078,7 +1078,7 @@ def create_stencil(type_str: str, steps: int, clip: int = None):
             'non-valid neighbourhood type for stencil creation')
 
 
-def to_lattice(a, minbound: np.ndarray, unit=1, orient=[0., 0., 0., 1.]) -> lattice:
+def to_lattice(a, minbound: np.ndarray, unit=1, orient=np.array([0., 0., 0., 1.])) -> lattice:
     """Converts a numpy array into a lattice
 
     Args:
