@@ -31,7 +31,7 @@ topoGenesis aims to utilize the vast functionalities of fields (mathematical obj
 ## Structure
 
 - Mesh to Field: Rasterization
-  - Point Cloud Regularization
+  - Point Cloud Voxelation
   - Line Network Voxelation
   - Mesh Surface Voxelation
   - Signed Distance Field
@@ -57,4 +57,4 @@ for installation check [this tutorial](https://topogenesis.readthedocs.io/instal
 
 ## Genesis Lab: Laboratory of Generative Systems and Sciences
 
-This project is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at [Genesis Lab: Laboratory of Generative Systems and Sciences](https://www.researchgate.net/lab/Genesis-Laboratory-of-Generative-Systems-and-Sciences-Pirouz-Nourian), Department of Architectural Engineering and Technology, at TU Delft.
+This project is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at [Genesis Lab: Laboratory of Generative Systems and Sciences](https://www.tudelft.nl/en/architecture-and-the-built-environment/research/research-facilities/genesis-lab), Department of Architectural Engineering and Technology, at TU Delft.
