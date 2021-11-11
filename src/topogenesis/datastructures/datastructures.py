@@ -2,6 +2,7 @@
 """
 topoGenesis DataStructure
 """
+
 from scipy.spatial.transform import Rotation as sp_rotation
 import numpy as np
 import pandas as pd
