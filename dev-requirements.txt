@@ -13,4 +13,4 @@ pytest-cov==2.10.1
 python==3.8.5
 pyvista==0.26.0
 scipy==1.5.2
-setuptools==49.6.0
+setuptools==65.5.1
