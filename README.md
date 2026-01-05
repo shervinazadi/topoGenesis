@@ -57,4 +57,15 @@ for installation check [this tutorial](https://topogenesis.readthedocs.io/instal
 
 ## Genesis Lab: Laboratory of Generative Systems and Sciences
 
-This project is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at [Genesis Lab: Laboratory of Generative Systems and Sciences](https://www.tudelft.nl/en/architecture-and-the-built-environment/research/research-facilities/genesis-lab), Department of Architectural Engineering and Technology, at TU Delft.
+This project is currently being developed by [Shervin Azadi](https://github.com/shervinazadi) and [Pirouz Nourian](https://github.com/Pirouz-Nourian) at [Genesis Lab](https://genesis-lab.dev/)
+
+Check out our latest publication on [Voxel Graph Operators](https://www.researchgate.net/publication/382625533_Voxel_graph_operators_Topological_voxelization_graph_generation_and_derivation_of_discrete_differential_operators_from_voxel_complexes):
+Pirouz Nourian, Shervin Azadi,
+Voxel graph operators: Topological voxelization, graph generation, and derivation of discrete differential operators from voxel complexes,
+Advances in Engineering Software,
+Volume 196,
+2024,
+103722,
+ISSN 0965-9978,
+[https://doi.org/10.1016/j.advengsoft.2024.103722](https://www.sciencedirect.com/science/article/pii/S0965997824001297)
+
